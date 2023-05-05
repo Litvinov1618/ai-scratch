@@ -1,8 +1,8 @@
 import React from "react";
 import { IPost } from "./App";
 import EditorMenu from "./EditorMenu";
-
-// TODO: Add Debounce
+import formatDate from "./formatDate";
+import useDebounce from "./useDebounce";
 
 interface Props {
   posts: IPost[];
@@ -12,18 +12,7 @@ interface Props {
 }
 
 function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
-  const formatDate = (date: number) => {
-    const d = new Date(date);
-    const day = d.getDate();
-    const month = d.toLocaleString("default", { month: "short" });
-    const year = d.getFullYear();
-    const hours = d.getHours();
-    const minutes = d.getMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const formattedHours = hours % 12 || 12;
-    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-    return `${day} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm}`;
-  };
+  const debounce = useDebounce();
 
   const handleDelete = (id: string) => {
     const filteredPosts = posts.filter((post) => post.id !== id);
@@ -40,14 +29,16 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
     };
     setSelectedPost(updatedPost);
 
-    const updatedPosts = posts.map((post) => {
-      if (post.id === selectedPost.id) {
-        return updatedPost;
-      }
-      return post;
-    });
-    setPosts(updatedPosts);
-    localStorage.setItem("posts", JSON.stringify(updatedPosts));
+    debounce(() => {
+      const updatedPosts = posts.map((post) => {
+        if (post.id === selectedPost.id) {
+          return updatedPost;
+        }
+        return post;
+      });
+      setPosts(updatedPosts);
+      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+    }, 1000);
   };
 
   const onTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

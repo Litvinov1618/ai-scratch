@@ -8,14 +8,16 @@ interface Props {
   createPost: () => void;
 }
 
-function EditorMenu({ selectedPost, selectLastPost, handleDelete, createPost }: Props) {
+function EditorMenu({
+  selectedPost,
+  selectLastPost,
+  handleDelete,
+  createPost,
+}: Props) {
   return (
     <ul className="menu menu-horizontal bg-base-100 rounded-box w-full justify-between">
       <li>
-        <button
-          onClick={createPost}
-          disabled={!selectedPost?.text}
-        >
+        <button onClick={createPost} disabled={!selectedPost?.text}>
           <svg
             className="h-5 w-5"
             fill="none"
