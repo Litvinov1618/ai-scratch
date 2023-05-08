@@ -3,21 +3,15 @@ import { IPost } from "./App";
 
 interface Props {
   selectedPost: IPost | null;
-  selectLastPost: () => void;
   handleDelete: (id: string) => void;
   createPost: () => void;
 }
 
-function EditorMenu({
-  selectedPost,
-  selectLastPost,
-  handleDelete,
-  createPost,
-}: Props) {
+function EditorMenu({ selectedPost, handleDelete, createPost }: Props) {
   return (
     <ul className="menu menu-horizontal bg-base-100 rounded-box w-full justify-between">
       <li>
-        <button onClick={createPost} disabled={!selectedPost?.text}>
+        <button onClick={createPost}>
           <svg
             className="h-5 w-5"
             fill="none"
@@ -37,10 +31,9 @@ function EditorMenu({
       </li>
       <li>
         <button
-          onClick={(e) => {
+          onClick={() => {
             if (!selectedPost) return;
             handleDelete(selectedPost.id);
-            selectLastPost();
           }}
         >
           <svg

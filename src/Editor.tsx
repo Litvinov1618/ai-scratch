@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useRef } from "react";
 import { IPost } from "./App";
 import EditorMenu from "./EditorMenu";
 import formatDate from "./formatDate";
 import useDebounce from "./useDebounce";
+import createEmbedding from "./createEmbedding";
 
 interface Props {
   posts: IPost[];
@@ -13,11 +14,23 @@ interface Props {
 
 function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
   const debounce = useDebounce();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const selectFirstPost = (posts: IPost[]) => {
+    if (!posts.length) {
+      setSelectedPost(null);
+      inputRef.current?.focus();
+      return;
+    }
+    setSelectedPost(posts[0]);
+    inputRef.current?.focus();
+  };
 
   const handleDelete = (id: string) => {
     const filteredPosts = posts.filter((post) => post.id !== id);
     setPosts(filteredPosts);
     localStorage.setItem("posts", JSON.stringify(filteredPosts));
+    selectFirstPost(filteredPosts);
   };
 
   const updatePost = (text: string) => {
@@ -26,13 +39,16 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
       id: selectedPost?.id,
       text: text,
       date: Date.now(),
+      embedding: [],
     };
     setSelectedPost(updatedPost);
 
-    debounce(() => {
+    debounce(async () => {
+      const embedding = await createEmbedding(text);
+
       const updatedPosts = posts.map((post) => {
         if (post.id === selectedPost.id) {
-          return updatedPost;
+          return { ...updatedPost, embedding };
         }
         return post;
       });
@@ -41,7 +57,7 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
     }, 1000);
   };
 
-  const onTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const onTextChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (selectedPost) {
       updatePost(e.target.value);
       return;
@@ -51,11 +67,12 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
       id: Math.random().toString(36).substr(2, 9),
       text: e.target.value,
       date: Date.now(),
+      embedding: [],
     };
 
     setSelectedPost(newPost);
 
-    const updatedPosts = [...posts, newPost];
+    const updatedPosts = [...posts, { ...newPost, text: "" }];
 
     setPosts(updatedPosts);
 
@@ -67,27 +84,22 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
       id: Math.random().toString(36).substr(2, 9),
       text: "",
       date: Date.now(),
+      embedding: [],
     };
 
     setSelectedPost(newSelectedPost);
 
     const updatedPosts = [...posts, newSelectedPost];
-
     setPosts(updatedPosts);
 
     localStorage.setItem("posts", JSON.stringify(updatedPosts));
-  };
-
-  const selectLastPost = () => {
-    if (!posts.length) return;
-    setSelectedPost(posts[posts.length - 2]);
+    inputRef.current?.focus();
   };
 
   return (
     <div className="form-control w-full">
       <EditorMenu
         selectedPost={selectedPost}
-        selectLastPost={selectLastPost}
         handleDelete={handleDelete}
         createPost={createPost}
       />
@@ -103,6 +115,8 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
         placeholder="What's on your mind?"
         value={selectedPost?.text || ""}
         onChange={onTextChange}
+        ref={inputRef}
+        autoFocus
       />
     </div>
   );
