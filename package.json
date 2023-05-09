@@ -11,6 +11,7 @@
     "@types/react": "^18.2.5",
     "@types/react-dom": "^18.2.3",
     "compute-cosine-similarity": "^1.0.0",
+    "gh-pages": "^5.0.0",
     "openai": "^3.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -18,7 +19,10 @@
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
+  "homepage": "https://litvinov1618.github.io/ai-scratch",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
