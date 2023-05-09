@@ -20,6 +20,7 @@ function App() {
     const posts = JSON.parse(data);
     setPosts(posts);
     setSelectedPost(posts[0]);
+    console.log('Check GH Pages Actions');
   }, []);
 
   return (
