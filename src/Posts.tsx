@@ -60,7 +60,7 @@ function Posts({
   }, [posts, setVisiblePosts]);
 
   return (
-    <div className="w-1/3">
+    <div className="p-3"  style={{ width: "400px" }}>
       <div className="form-control hover:bg-transparent pb-3">
         <div className="input-group">
           <input
