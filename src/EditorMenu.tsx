@@ -1,5 +1,6 @@
 import React from "react";
 import { IPost } from "./App";
+import formatDate from "./formatDate";
 
 interface Props {
   selectedPost: IPost | null;
@@ -9,9 +10,9 @@ interface Props {
 
 function EditorMenu({ selectedPost, handleDelete, createPost }: Props) {
   return (
-    <ul className="menu menu-horizontal bg-base-100 rounded-box w-full justify-between">
+    <ul className="menu menu-horizontal bg-base-100 rounded-box w-full justify-between py-3">
       <li>
-        <button onClick={createPost}>
+        <button onClick={createPost} className="px-0">
           <svg
             className="h-5 w-5"
             fill="none"
@@ -30,11 +31,21 @@ function EditorMenu({ selectedPost, handleDelete, createPost }: Props) {
         </button>
       </li>
       <li>
+        <div className="flex justify-center hover:bg-inherit">
+          <span className="badge">
+            {selectedPost?.date
+              ? formatDate(selectedPost.date).toString()
+              : formatDate(Date.now())}
+          </span>
+        </div>
+      </li>
+      <li>
         <button
           onClick={() => {
             if (!selectedPost) return;
             handleDelete(selectedPost.id);
           }}
+          className="px-0"
         >
           <svg
             className="h-5 w-5"

@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import Post from "./Post";
 import { IPost } from "./App";
 import createEmbedding from "./createEmbedding";
+import generateAIResponse from "./generateAIResponse";
+import AIResponseBubble from "./AIResponseBubble";
 
 const similarity = require("compute-cosine-similarity");
 
@@ -23,6 +25,7 @@ function Posts({
   const [isLoading, setIsLoading] = useState(false);
   const [minimumSimilarity, setMinimumSimilarity] = useState(0.8);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [aiResponse, setAiResponse] = useState("");
 
   const selectPost = (id: string) => {
     const post = posts.find((post) => post.id === id);
@@ -41,6 +44,10 @@ function Posts({
       return similarityIndex > minimumSimilarity;
     });
 
+    const aiResponse = await generateAIResponse(searchValue, filteredPosts);
+
+    if (aiResponse) setAiResponse(aiResponse);
+
     console.log("searchValue: " + searchValue + "\n", similarities);
     setVisiblePosts(filteredPosts);
     setIsLoading(false);
@@ -57,11 +64,18 @@ function Posts({
 
   useEffect(() => {
     setVisiblePosts(posts);
+    setAiResponse("");
   }, [posts, setVisiblePosts]);
 
+  useEffect(() => {
+    if (searchValue) return;
+    setVisiblePosts(posts);
+    setAiResponse("");
+  }, [searchValue, setVisiblePosts, posts]);
+
   return (
-    <div className="p-3"  style={{ width: "400px" }}>
-      <div className="form-control hover:bg-transparent pb-3">
+    <div className="max-lg:p-3 p-4 w-full">
+      <div className="form-control hover:bg-transparent pb-1">
         <div className="input-group">
           <input
             type="text"
@@ -98,22 +112,31 @@ function Posts({
             ) : null}
           </button>
         </div>
-        {isDeveloperMode ? (
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Minimum Similarity: {minimumSimilarity}</span>
-            </label>
-            <div className="input-group">
-              <input
-                type="range"
-                min="0"
-                max="1"
-                value={minimumSimilarity}
-                step="0.02"
-                onChange={(e) => setMinimumSimilarity(Number(e.target.value))}
-                className="range range-primary"
-              />
-            </div>
+        {isDeveloperMode || aiResponse ? (
+          <div className="pt-3">
+            {aiResponse ? <AIResponseBubble aiResponse={aiResponse} /> : null}
+            {isDeveloperMode ? (
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">
+                    Minimum Similarity: {minimumSimilarity}
+                  </span>
+                </label>
+                <div className="input-group">
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    value={minimumSimilarity}
+                    step="0.02"
+                    onChange={(e) =>
+                      setMinimumSimilarity(Number(e.target.value))
+                    }
+                    className="range range-primary"
+                  />
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

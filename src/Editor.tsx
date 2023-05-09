@@ -1,9 +1,9 @@
 import React, { useRef } from "react";
 import { IPost } from "./App";
 import EditorMenu from "./EditorMenu";
-import formatDate from "./formatDate";
 import useDebounce from "./useDebounce";
 import createEmbedding from "./createEmbedding";
+import formatDate from "./formatDate";
 
 interface Props {
   posts: IPost[];
@@ -44,7 +44,7 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
     setSelectedPost(updatedPost);
 
     debounce(async () => {
-      const embedding = await createEmbedding(text);
+      const embedding = await createEmbedding(text + " " + formatDate(updatedPost.date));
 
       const updatedPosts = posts.map((post) => {
         if (post.id === selectedPost.id) {
@@ -103,15 +103,8 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
         handleDelete={handleDelete}
         createPost={createPost}
       />
-      <div className="py-2 flex justify-center">
-        <span className="badge">
-          {selectedPost?.date
-            ? formatDate(selectedPost.date).toString()
-            : formatDate(Date.now())}
-        </span>
-      </div>
       <textarea
-        className="textarea textarea-bordered h-80 resize-none placeholder-black"
+        className="textarea textarea-bordered resize-none placeholder-black h-full"
         placeholder="What's on your mind?"
         value={selectedPost?.text || ""}
         onChange={onTextChange}
