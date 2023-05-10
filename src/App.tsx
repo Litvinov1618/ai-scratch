@@ -22,7 +22,7 @@ function App() {
     const posts = JSON.parse(data);
     setPosts(posts);
     setSelectedPost(posts[0]);
-    console.log("Check")
+    console.log(process.env)
   }, []);
 
   return (
