@@ -3,6 +3,7 @@ import Editor from "./Editor";
 import Posts from "./Posts";
 import DeveloperModeToggleButton from "./DeveloperModeToggleButton";
 import DrawerButton from "./DrawerButton";
+import fetchPosts from "./fetchPosts";
 
 export interface IPost {
   id: string;
@@ -16,13 +17,18 @@ function App() {
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
   const [isDeveloperMode, setIsDeveloperMode] = useState(false);
 
+  const initiatePosts = async () => {
+    const notes = await fetchPosts();
+    if (!notes) return;
+
+    setPosts(notes);
+
+    if (!notes.length) return;
+    setSelectedPost(notes[0]);
+  };
+
   useEffect(() => {
-    const data = localStorage.getItem("posts");
-    if (!data) return;
-    const posts = JSON.parse(data);
-    setPosts(posts);
-    setSelectedPost(posts[0]);
-    console.log(process.env)
+    initiatePosts();
   }, []);
 
   return (

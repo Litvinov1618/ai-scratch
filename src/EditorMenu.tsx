@@ -34,7 +34,7 @@ function EditorMenu({ selectedPost, handleDelete, createPost }: Props) {
         <div className="flex justify-center hover:bg-inherit">
           <span className="badge">
             {selectedPost?.date
-              ? formatDate(selectedPost.date).toString()
+              ? formatDate(+selectedPost.date).toString()
               : formatDate(Date.now())}
           </span>
         </div>

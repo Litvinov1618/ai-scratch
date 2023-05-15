@@ -13,7 +13,7 @@ const Post = ({ post, isActive, selectPost }: Props) => {
     <li onClick={() => selectPost(post.id)}>
       <div className={`${isActive ? "active" : ""} flex-col items-start`}>
         <p className="line-clamp-2">{post.text ? post.text : "New Note"}</p>
-        <div className="badge badge-sm">{formatDate(post.date)}</div>
+        <div className="badge badge-sm">{formatDate(+post.date)}</div>
       </div>
     </li>
   );

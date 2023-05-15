@@ -42,7 +42,7 @@ const generateAIResponse = async (
       {
         role: "user",
         content: `Question: ${searchValue} Notes: ${notes
-          .map((note, index) => `${index + 1}. Date: ${formatDate(note.date)} Text: ${note.text}`)
+          .map((note, index) => `${index + 1}. Date: ${formatDate(+note.date)} Text: ${note.text}`)
           .join(" ")}`,
       },
     ],

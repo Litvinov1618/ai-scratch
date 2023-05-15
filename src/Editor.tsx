@@ -2,8 +2,9 @@ import React, { useRef } from "react";
 import { IPost } from "./App";
 import EditorMenu from "./EditorMenu";
 import useDebounce from "./useDebounce";
-import createEmbedding from "./createEmbedding";
-import formatDate from "./formatDate";
+import deletePost from "./deletePost";
+import updatePostRequest from "./updatePost";
+import addPost from "./addPost";
 
 interface Props {
   posts: IPost[];
@@ -26,17 +27,17 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
     inputRef.current?.focus();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const filteredPosts = posts.filter((post) => post.id !== id);
     setPosts(filteredPosts);
-    localStorage.setItem("posts", JSON.stringify(filteredPosts));
+    deletePost(id);
     selectFirstPost(filteredPosts);
   };
 
   const updatePost = (text: string) => {
     if (!selectedPost) return;
     const updatedPost: IPost = {
-      id: selectedPost?.id,
+      id: selectedPost.id,
       text: text,
       date: Date.now(),
       embedding: [],
@@ -44,55 +45,38 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
     setSelectedPost(updatedPost);
 
     debounce(async () => {
-      const embedding = await createEmbedding(text + " " + formatDate(updatedPost.date));
-
       const updatedPosts = posts.map((post) => {
         if (post.id === selectedPost.id) {
-          return { ...updatedPost, embedding };
+          return updatedPost;
         }
         return post;
       });
       setPosts(updatedPosts);
-      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+      updatePostRequest(updatedPost);
     }, 1000);
   };
 
   const onTextChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (selectedPost) {
-      updatePost(e.target.value);
+    if (!selectedPost) {
       return;
     }
-
-    const newPost: IPost = {
-      id: Math.random().toString(36).substr(2, 9),
-      text: e.target.value,
-      date: Date.now(),
-      embedding: [],
-    };
-
-    setSelectedPost(newPost);
-
-    const updatedPosts = [...posts, { ...newPost, text: "" }];
-
-    setPosts(updatedPosts);
-
-    localStorage.setItem("posts", JSON.stringify(updatedPosts));
+    
+    updatePost(e.target.value);
   };
 
-  const createPost = () => {
-    const newSelectedPost: IPost = {
-      id: Math.random().toString(36).substr(2, 9),
+  const createEmptyPost = async () => {
+    const newSelectedPost: Omit<IPost, 'id'> = {
       text: "",
       date: Date.now(),
       embedding: [],
     };
+    const newPost = await addPost(newSelectedPost);
 
-    setSelectedPost(newSelectedPost);
+    setSelectedPost(newPost);
 
-    const updatedPosts = [...posts, newSelectedPost];
+    const updatedPosts = [...posts, newPost];
     setPosts(updatedPosts);
 
-    localStorage.setItem("posts", JSON.stringify(updatedPosts));
     inputRef.current?.focus();
   };
 
@@ -101,7 +85,7 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
       <EditorMenu
         selectedPost={selectedPost}
         handleDelete={handleDelete}
-        createPost={createPost}
+        createPost={createEmptyPost}
       />
       <textarea
         className="textarea textarea-bordered resize-none placeholder-black h-full"

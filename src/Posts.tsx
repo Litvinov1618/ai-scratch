@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import Post from "./Post";
 import { IPost } from "./App";
-import createEmbedding from "./createEmbedding";
 import generateAIResponse from "./generateAIResponse";
 import AIResponseBubble from "./AIResponseBubble";
-
-const similarity = require("compute-cosine-similarity");
+import searchPosts from "./searchPosts";
 
 interface Props {
   posts: IPost[];
@@ -35,20 +33,13 @@ function Posts({
 
   const filterPosts = async (searchValue: string) => {
     setIsLoading(true);
-    const searchValueEmbedding = await createEmbedding(searchValue);
 
-    const similarities: { text: string; similarity: number }[] = [];
-    const filteredPosts = posts.filter((post) => {
-      const similarityIndex = similarity(post.embedding, searchValueEmbedding);
-      similarities.push({ text: post.text, similarity: similarityIndex });
-      return similarityIndex > minimumSimilarity;
-    });
+    const filteredPosts = await searchPosts(searchValue);
 
     const aiResponse = await generateAIResponse(searchValue, filteredPosts);
 
     if (aiResponse) setAiResponse(aiResponse);
 
-    console.log("searchValue: " + searchValue + "\n", similarities);
     setVisiblePosts(filteredPosts);
     setIsLoading(false);
   };
