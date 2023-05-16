@@ -1,84 +1,81 @@
-import React, { useRef } from "react";
+import React from "react";
 import { IPost } from "./App";
 import EditorMenu from "./EditorMenu";
 import useDebounce from "./useDebounce";
-import deletePost from "./deletePost";
+import deletePostRequest from "./deletePost";
 import updatePostRequest from "./updatePost";
-import addPost from "./addPost";
+import useDefer, { Status } from "use-defer";
+import fetchPosts from "./fetchPosts";
 
 interface Props {
   posts: IPost[];
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   selectedPost: IPost | null;
   setSelectedPost: React.Dispatch<React.SetStateAction<IPost | null>>;
+  editorInputRef: React.RefObject<HTMLTextAreaElement>;
+  createEmptyPost: () => void;
+  addPostStatus: Status;
 }
 
-function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
+function Editor({
+  posts,
+  setPosts,
+  selectedPost,
+  setSelectedPost,
+  editorInputRef,
+  createEmptyPost,
+  addPostStatus,
+}: Props) {
+  const { status: deletePostStatus, execute: deletePost } =
+    useDefer(deletePostRequest);
+  const { execute: updatePost } = useDefer(updatePostRequest);
+
   const debounce = useDebounce();
-  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const selectFirstPost = (posts: IPost[]) => {
     if (!posts.length) {
       setSelectedPost(null);
-      inputRef.current?.focus();
+      editorInputRef.current?.focus();
       return;
     }
     setSelectedPost(posts[0]);
-    inputRef.current?.focus();
+    editorInputRef.current?.focus();
   };
 
   const handleDelete = async (id: string) => {
-    const filteredPosts = posts.filter((post) => post.id !== id);
-    setPosts(filteredPosts);
-    deletePost(id);
-    selectFirstPost(filteredPosts);
-  };
-
-  const updatePost = (text: string) => {
-    if (!selectedPost) return;
-    const updatedPost: IPost = {
-      id: selectedPost.id,
-      text: text,
-      date: Date.now(),
-      embedding: [],
-    };
-    setSelectedPost(updatedPost);
-
-    debounce(async () => {
-      const updatedPosts = posts.map((post) => {
-        if (post.id === selectedPost.id) {
-          return updatedPost;
-        }
-        return post;
-      });
-      setPosts(updatedPosts);
-      updatePostRequest(updatedPost);
-    }, 1000);
+    await deletePost(id);
+    const updatedPosts = await fetchPosts();
+    setPosts(updatedPosts);
+    selectFirstPost(updatedPosts);
   };
 
   const onTextChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (!selectedPost) {
       return;
     }
-    
-    updatePost(e.target.value);
-  };
 
-  const createEmptyPost = async () => {
-    const newSelectedPost: Omit<IPost, 'id'> = {
-      text: "",
+    const updatedPost = {
+      ...selectedPost,
+      text: e.target.value,
       date: Date.now(),
-      embedding: [],
     };
-    const newPost = await addPost(newSelectedPost);
 
-    setSelectedPost(newPost);
+    setSelectedPost(updatedPost);
 
-    const updatedPosts = [...posts, newPost];
-    setPosts(updatedPosts);
-
-    inputRef.current?.focus();
+    debounce(async () => {
+      await updatePost(
+        { text: updatedPost.text, date: updatedPost.date },
+        selectedPost.id
+      );
+      const updatedPosts = await fetchPosts();
+      setPosts(updatedPosts);
+    }, 1000);
   };
+
+  const isPostAdding = addPostStatus === Status.PENDING;
+  const isPostDeleting = deletePostStatus === Status.PENDING;
+
+  const controlsDisabled = isPostAdding || isPostDeleting;
 
   return (
     <div className="form-control w-full">
@@ -86,14 +83,16 @@ function Editor({ posts, setPosts, selectedPost, setSelectedPost }: Props) {
         selectedPost={selectedPost}
         handleDelete={handleDelete}
         createPost={createEmptyPost}
+        posts={posts}
+        controlsDisabled={controlsDisabled}
       />
       <textarea
         className="textarea textarea-bordered resize-none placeholder-black h-full"
         placeholder="What's on your mind?"
         value={selectedPost?.text || ""}
         onChange={onTextChange}
-        ref={inputRef}
-        autoFocus
+        ref={editorInputRef}
+        disabled={controlsDisabled}
       />
     </div>
   );

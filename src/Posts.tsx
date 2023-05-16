@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Post from "./Post";
 import { IPost } from "./App";
-import generateAIResponse from "./generateAIResponse";
 import AIResponseBubble from "./AIResponseBubble";
 import searchPosts from "./searchPosts";
 
@@ -9,19 +8,12 @@ interface Props {
   posts: IPost[];
   selectedPost: IPost | null;
   setSelectedPost: React.Dispatch<React.SetStateAction<IPost | null>>;
-  isDeveloperMode: boolean;
 }
 
-function Posts({
-  posts,
-  selectedPost,
-  setSelectedPost,
-  isDeveloperMode,
-}: Props) {
+function Posts({ posts, selectedPost, setSelectedPost }: Props) {
   const [searchValue, setSearchValue] = useState("");
   const [visiblePosts, setVisiblePosts] = useState(posts);
   const [isLoading, setIsLoading] = useState(false);
-  const [minimumSimilarity, setMinimumSimilarity] = useState(0.8);
   const inputRef = useRef<HTMLInputElement>(null);
   const [aiResponse, setAiResponse] = useState("");
 
@@ -34,13 +26,11 @@ function Posts({
   const filterPosts = async (searchValue: string) => {
     setIsLoading(true);
 
-    const filteredPosts = await searchPosts(searchValue);
-
-    const aiResponse = await generateAIResponse(searchValue, filteredPosts);
+    const { posts, aiResponse } = await searchPosts(searchValue);
 
     if (aiResponse) setAiResponse(aiResponse);
 
-    setVisiblePosts(filteredPosts);
+    setVisiblePosts(posts);
     setIsLoading(false);
   };
 
@@ -103,31 +93,9 @@ function Posts({
             ) : null}
           </button>
         </div>
-        {isDeveloperMode || aiResponse ? (
+        {aiResponse ? (
           <div className="pt-3">
             {aiResponse ? <AIResponseBubble aiResponse={aiResponse} /> : null}
-            {isDeveloperMode ? (
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">
-                    Minimum Similarity: {minimumSimilarity}
-                  </span>
-                </label>
-                <div className="input-group">
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    value={minimumSimilarity}
-                    step="0.02"
-                    onChange={(e) =>
-                      setMinimumSimilarity(Number(e.target.value))
-                    }
-                    className="range range-primary"
-                  />
-                </div>
-              </div>
-            ) : null}
           </div>
         ) : null}
       </div>
@@ -139,6 +107,7 @@ function Posts({
               post={post}
               isActive={selectedPost?.id === post.id}
               selectPost={selectPost}
+              selectedPost={selectedPost}
             />
           ))}
         </ul>

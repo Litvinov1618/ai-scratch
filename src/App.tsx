@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Editor from "./Editor";
 import Posts from "./Posts";
-import DeveloperModeToggleButton from "./DeveloperModeToggleButton";
 import DrawerButton from "./DrawerButton";
-import fetchPosts from "./fetchPosts";
+import fetchPostsRequest from "./fetchPosts";
+import useDefer, { Status } from "use-defer";
+import addPostRequest from "./addPost";
 
 export interface IPost {
   id: string;
@@ -13,23 +14,50 @@ export interface IPost {
 }
 
 function App() {
+  const { status: addPostStatus, execute: addPost } = useDefer(addPostRequest);
+  const { status: fetchPostsStatus, execute: fetchPosts } = useDefer(fetchPostsRequest);
   const [posts, setPosts] = useState<IPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
-  const [isDeveloperMode, setIsDeveloperMode] = useState(false);
+
+  const editorInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const createEmptyPost = async () => {
+    const newSelectedPost: Omit<IPost, "id"> = {
+      text: "",
+      date: Date.now(),
+      embedding: [],
+    };
+    const newPost = await addPost(newSelectedPost);
+
+    setSelectedPost(newPost);
+
+    const updatedPosts = [...posts, newPost];
+    setPosts(updatedPosts);
+
+    editorInputRef.current?.focus();
+  };
 
   const initiatePosts = async () => {
     const notes = await fetchPosts();
-    if (!notes) return;
+
+    if (!notes?.length) {
+      return;
+    }
 
     setPosts(notes);
 
-    if (!notes.length) return;
     setSelectedPost(notes[0]);
   };
 
   useEffect(() => {
     initiatePosts();
   }, []);
+
+  useEffect(() => {
+    if (fetchPostsStatus === Status.SUCCESS && !posts.length) {
+      createEmptyPost();
+    }
+  }, [fetchPostsStatus, posts]);
 
   return (
     <div className="drawer drawer-mobile">
@@ -41,12 +69,6 @@ function App() {
             <div className="absolute top-0 bottom-0 left-0 flex align-middle">
               <DrawerButton />
             </div>
-            <div className="absolute top-0 bottom-0 right-0 flex align-middle">
-              <DeveloperModeToggleButton
-                isDeveloperMode={isDeveloperMode}
-                setIsDeveloperMode={setIsDeveloperMode}
-              />
-            </div>
           </div>
           <div className="flex w-full max-sm:h-[88%] h-[90%]">
             <Editor
@@ -54,6 +76,9 @@ function App() {
               setPosts={setPosts}
               selectedPost={selectedPost}
               setSelectedPost={setSelectedPost}
+              editorInputRef={editorInputRef}
+              createEmptyPost={createEmptyPost}
+              addPostStatus={addPostStatus}
             />
           </div>
         </div>
@@ -65,7 +90,6 @@ function App() {
             selectedPost={selectedPost}
             posts={posts}
             setSelectedPost={setSelectedPost}
-            isDeveloperMode={isDeveloperMode}
           />
           <div className="divider divider-horizontal ml-0 max-lg:invisible max-lg:w-0 max-lg:mr-0"></div>
         </div>

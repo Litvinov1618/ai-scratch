@@ -6,11 +6,16 @@ interface Props {
   post: IPost;
   isActive?: boolean;
   selectPost: (id: string) => void;
+  selectedPost: IPost | null;
 }
 
-const Post = ({ post, isActive, selectPost }: Props) => {
+const Post = ({ post, isActive, selectPost, selectedPost }: Props) => {
+  const onPostClick = () => {
+    if (selectedPost?.id === post.id) return;
+    selectPost(post.id);
+  };
   return (
-    <li onClick={() => selectPost(post.id)}>
+    <li onClick={onPostClick}>
       <div className={`${isActive ? "active" : ""} flex-col items-start`}>
         <p className="line-clamp-2">{post.text ? post.text : "New Note"}</p>
         <div className="badge badge-sm">{formatDate(+post.date)}</div>

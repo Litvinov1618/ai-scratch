@@ -6,13 +6,18 @@ interface Props {
   selectedPost: IPost | null;
   handleDelete: (id: string) => void;
   createPost: () => void;
+  posts: IPost[];
+  controlsDisabled: boolean;
 }
 
-function EditorMenu({ selectedPost, handleDelete, createPost }: Props) {
+function EditorMenu({ selectedPost, handleDelete, createPost, posts, controlsDisabled }: Props) {
+  const createButtonDisabled = controlsDisabled || (!!posts.length && !selectedPost?.text);
+  const deleteButtonDisabled = controlsDisabled || posts?.length === 1 || !selectedPost;
+
   return (
     <ul className="menu menu-horizontal bg-base-100 rounded-box w-full justify-between py-3">
-      <li>
-        <button onClick={createPost} className="px-0">
+      <li className={createButtonDisabled ? 'disabled' : ''}>
+        <button onClick={createPost} className="px-0" disabled={createButtonDisabled}>
           <svg
             className="h-5 w-5"
             fill="none"
@@ -39,13 +44,14 @@ function EditorMenu({ selectedPost, handleDelete, createPost }: Props) {
           </span>
         </div>
       </li>
-      <li>
+      <li className={deleteButtonDisabled ? 'disabled' : ''}>
         <button
           onClick={() => {
             if (!selectedPost) return;
             handleDelete(selectedPost.id);
           }}
           className="px-0"
+          disabled={deleteButtonDisabled}
         >
           <svg
             className="h-5 w-5"

@@ -1,8 +1,8 @@
 import { IPost } from "./App";
 
-const updatePost = async (post: IPost) => {
+const updatePost = async (post: Omit<IPost, "embedding" | "id">, id: string) => {
     try {
-        const res = await fetch(`http://localhost:5001/notes/${post.id}`, {
+        const res = await fetch(`http://localhost:5001/notes/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
