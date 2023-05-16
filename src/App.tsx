@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import Editor from "./Editor";
 import Posts from "./Posts";
 import DrawerButton from "./DrawerButton";
-import fetchPostsRequest from "./fetchPosts";
-import useDefer, { Status } from "use-defer";
-import addPostRequest from "./addPost";
+import fetchPosts from "./fetchPosts";
+import useRequest from "use-request";
+import addPost from "./addPost";
 
 export interface IPost {
   id: string;
@@ -14,8 +14,8 @@ export interface IPost {
 }
 
 function App() {
-  const { status: addPostStatus, execute: addPost } = useDefer(addPostRequest);
-  const { status: fetchPostsStatus, execute: fetchPosts } = useDefer(fetchPostsRequest);
+  const addPostRequest = useRequest(addPost);
+  const fetchPostsRequest = useRequest(fetchPosts);
   const [posts, setPosts] = useState<IPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
 
@@ -27,7 +27,7 @@ function App() {
       date: Date.now(),
       embedding: [],
     };
-    const newPost = await addPost(newSelectedPost);
+    const newPost = await addPostRequest.execute(newSelectedPost);
 
     setSelectedPost(newPost);
 
@@ -38,7 +38,7 @@ function App() {
   };
 
   const initiatePosts = async () => {
-    const notes = await fetchPosts();
+    const notes = await fetchPostsRequest.execute();
 
     if (!notes?.length) {
       return;
@@ -54,10 +54,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (fetchPostsStatus === Status.SUCCESS && !posts.length) {
+    if (fetchPostsRequest.completed && !posts.length) {
       createEmptyPost();
     }
-  }, [fetchPostsStatus, posts]);
+  }, [fetchPostsRequest.completed, posts]);
 
   return (
     <div className="drawer drawer-mobile">
@@ -78,7 +78,7 @@ function App() {
               setSelectedPost={setSelectedPost}
               editorInputRef={editorInputRef}
               createEmptyPost={createEmptyPost}
-              addPostStatus={addPostStatus}
+              addPostStatus={addPostRequest.status}
             />
           </div>
         </div>

@@ -2,10 +2,10 @@ import React from "react";
 import { IPost } from "./App";
 import EditorMenu from "./EditorMenu";
 import useDebounce from "./useDebounce";
-import deletePostRequest from "./deletePost";
-import updatePostRequest from "./updatePost";
-import useDefer, { Status } from "use-defer";
+import deletePost from "./deletePost";
+import updatePost from "./updatePost";
 import fetchPosts from "./fetchPosts";
+import useRequest, { UseRequestStatus } from "use-request";
 
 interface Props {
   posts: IPost[];
@@ -14,7 +14,7 @@ interface Props {
   setSelectedPost: React.Dispatch<React.SetStateAction<IPost | null>>;
   editorInputRef: React.RefObject<HTMLTextAreaElement>;
   createEmptyPost: () => void;
-  addPostStatus: Status;
+  addPostStatus: UseRequestStatus;
 }
 
 function Editor({
@@ -26,9 +26,9 @@ function Editor({
   createEmptyPost,
   addPostStatus,
 }: Props) {
-  const { status: deletePostStatus, execute: deletePost } =
-    useDefer(deletePostRequest);
-  const { execute: updatePost } = useDefer(updatePostRequest);
+  const deletePostRequest = useRequest(deletePost);
+  const updatePostRequest = useRequest(updatePost);
+  const fetchPostsRequest = useRequest(fetchPosts);
 
   const debounce = useDebounce();
 
@@ -43,8 +43,8 @@ function Editor({
   };
 
   const handleDelete = async (id: string) => {
-    await deletePost(id);
-    const updatedPosts = await fetchPosts();
+    await deletePostRequest.execute(id);
+    const updatedPosts = await fetchPostsRequest.execute();
     setPosts(updatedPosts);
     selectFirstPost(updatedPosts);
   };
@@ -63,17 +63,17 @@ function Editor({
     setSelectedPost(updatedPost);
 
     debounce(async () => {
-      await updatePost(
+      await updatePostRequest.execute(
         { text: updatedPost.text, date: updatedPost.date },
         selectedPost.id
       );
-      const updatedPosts = await fetchPosts();
+      const updatedPosts = await fetchPostsRequest.execute();
       setPosts(updatedPosts);
     }, 1000);
   };
 
-  const isPostAdding = addPostStatus === Status.PENDING;
-  const isPostDeleting = deletePostStatus === Status.PENDING;
+  const isPostAdding = addPostStatus === UseRequestStatus.Pending;
+  const isPostDeleting = deletePostRequest.pending;
 
   const controlsDisabled = isPostAdding || isPostDeleting;
 
