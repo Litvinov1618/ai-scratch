@@ -51,12 +51,14 @@ function App() {
 
   useEffect(() => {
     initiatePosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (fetchPostsRequest.completed && !posts.length) {
       createEmptyPost();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchPostsRequest.completed, posts]);
 
   return (
