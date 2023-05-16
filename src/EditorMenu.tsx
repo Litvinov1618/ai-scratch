@@ -17,7 +17,7 @@ function EditorMenu({ selectedPost, handleDelete, createPost, posts, controlsDis
   return (
     <ul className="menu menu-horizontal bg-base-100 rounded-box w-full justify-between py-3">
       <li className={createButtonDisabled ? 'disabled' : ''}>
-        <button onClick={createPost} className="px-0" disabled={createButtonDisabled}>
+        <button onClick={createPost} className="px-1" disabled={createButtonDisabled}>
           <svg
             className="h-5 w-5"
             fill="none"
@@ -36,7 +36,7 @@ function EditorMenu({ selectedPost, handleDelete, createPost, posts, controlsDis
         </button>
       </li>
       <li>
-        <div className="flex justify-center hover:bg-inherit">
+        <div className="flex justify-center hover:bg-inherit hover:cursor-default">
           <span className="badge">
             {selectedPost?.date
               ? formatDate(+selectedPost.date).toString()
@@ -50,7 +50,7 @@ function EditorMenu({ selectedPost, handleDelete, createPost, posts, controlsDis
             if (!selectedPost) return;
             handleDelete(selectedPost.id);
           }}
-          className="px-0"
+          className="px-1"
           disabled={deleteButtonDisabled}
         >
           <svg

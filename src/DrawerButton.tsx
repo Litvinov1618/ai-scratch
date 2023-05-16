@@ -4,7 +4,7 @@ function DrawerButton() {
   return (
     <label
       htmlFor="my-drawer"
-      className="btn btn-ghost drawer-button lg:hidden p-0"
+      className="btn btn-ghost drawer-button lg:hidden p-0 px-1"
     >
       <svg
         className="h-5 w-5"
