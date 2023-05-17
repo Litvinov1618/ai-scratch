@@ -1,6 +1,6 @@
 const searchPosts = async (searchValue: string) => {
     try {
-        const res = await fetch(`http://localhost:5001/notes/search?searchValue=${searchValue}`, {
+        const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/notes/search?searchValue=${searchValue}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

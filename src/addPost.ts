@@ -2,7 +2,7 @@ import { IPost } from "./App";
 
 const addPost = async (post: Omit<IPost, 'id'>) => {
     try {
-        const res = await fetch("http://localhost:5001/notes", {
+        const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/notes`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

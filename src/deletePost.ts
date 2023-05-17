@@ -1,6 +1,6 @@
 const deletePost = async (id: string) => {
     try {
-        const res = await fetch(`http://localhost:5001/notes/${id}`, {
+        const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/notes/${id}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",

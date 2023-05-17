@@ -2,7 +2,7 @@ import { IPost } from "./App";
 
 const updatePost = async (post: Omit<IPost, "embedding" | "id">, id: string) => {
     try {
-        const res = await fetch(`http://localhost:5001/notes/${id}`, {
+        const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/notes/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
