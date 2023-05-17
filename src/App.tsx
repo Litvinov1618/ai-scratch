@@ -10,7 +10,6 @@ export interface IPost {
   id: string;
   text: string;
   date: number;
-  embedding: number[];
 }
 
 function App() {
@@ -25,7 +24,6 @@ function App() {
     const newSelectedPost: Omit<IPost, "id"> = {
       text: "",
       date: Date.now(),
-      embedding: [],
     };
     const newPost = await addPostRequest.execute(newSelectedPost);
 
