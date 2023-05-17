@@ -1,8 +1,16 @@
+const MINIMUM_SWIPE_DISTANCE = 120;
+
 const checkDirection = (touchstartX: number, touchendX: number, closeDrawer: () => void, openDrawer: () => void) => {
     if (touchendX < touchstartX) {
-        closeDrawer();
+        if (touchstartX - touchendX >= MINIMUM_SWIPE_DISTANCE) {
+            closeDrawer();
+        }
         return;
     };
+
+    if (touchendX - touchstartX <= MINIMUM_SWIPE_DISTANCE) {
+        return;
+    }
 
     openDrawer();
 }
