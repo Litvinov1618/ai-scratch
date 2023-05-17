@@ -6,6 +6,8 @@ import fetchPosts from "./fetchPosts";
 import useRequest from "use-request";
 import addPost from "./addPost";
 import loadingMessages from "./loadingMessages";
+import registerSwipeListeners from "./registerSwipeListeners";
+import checkMobileDevice from "./checkMobileDevice";
 
 export interface IPost {
   id: string;
@@ -19,6 +21,8 @@ function App() {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
 
   const editorInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -49,9 +53,22 @@ function App() {
     setSelectedPost(notes[0]);
   };
 
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
+  };
+
+  const openDrawer = () => {
+    setIsDrawerOpen(true);
+  };
+
   useEffect(() => {
     setLoadingMessageIndex(Math.floor(Math.random() * loadingMessages.length));
+
     initiatePosts();
+
+    setIsMobileDevice(checkMobileDevice());
+
+    return registerSwipeListeners(closeDrawer, openDrawer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -66,21 +83,29 @@ function App() {
     <div className="relative">
       {fetchPostsRequest.pending && (
         <div className="backdrop-blur-sm absolute top-0 left-0 right-0 bottom-0 z-20 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-5 w-[380px] whitespace-pre-wrap">
-            {
-              loadingMessages[loadingMessageIndex]
-            }
+          <div className="flex flex-col items-center gap-5 w-[380px] max-sm:w-[280px] whitespace-pre-wrap">
+            {loadingMessages[loadingMessageIndex]}
             <progress className="progress w-56"></progress>
           </div>
         </div>
       )}
       <div className="drawer drawer-mobile">
-        <input id="my-drawer" type="checkbox" className="drawer-toggle" />
+        <input
+          id="my-drawer"
+          type="checkbox"
+          className="drawer-toggle"
+          checked={isDrawerOpen}
+          onChange={() => setIsDrawerOpen(!isDrawerOpen)}
+        />
         <div className="drawer-content">
           <div className="isolate p-4 lg:pl-1 h-screen max-sm:px-2 max-sm:py-4">
             <div className="text-5xl text-center mb-7 relative">
               AI Scratch
-              <div className="absolute top-0 bottom-0 left-0 flex align-middle">
+              <div
+                className={`absolute top-0 bottom-0 left-0 flex align-middle lg:hidden ${
+                  isMobileDevice ? "hidden" : ""
+                }`}
+              >
                 <DrawerButton />
               </div>
             </div>
@@ -104,8 +129,9 @@ function App() {
               selectedPost={selectedPost}
               posts={posts}
               setSelectedPost={setSelectedPost}
+              closeDrawer={closeDrawer}
             />
-            <div className="divider divider-horizontal ml-0 max-lg:invisible max-lg:w-0 max-lg:mr-0"></div>
+            <div className="divider divider-horizontal ml-0 max-lg:invisible max-lg:w-0 max-lg:mr-0" />
           </div>
         </div>
       </div>

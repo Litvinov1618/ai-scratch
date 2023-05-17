@@ -8,9 +8,10 @@ interface Props {
   posts: IPost[];
   selectedPost: IPost | null;
   setSelectedPost: React.Dispatch<React.SetStateAction<IPost | null>>;
+  closeDrawer: () => void;
 }
 
-function Posts({ posts, selectedPost, setSelectedPost }: Props) {
+function Posts({ posts, selectedPost, setSelectedPost, closeDrawer }: Props) {
   const [searchValue, setSearchValue] = useState("");
   const [visiblePosts, setVisiblePosts] = useState(posts);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +22,7 @@ function Posts({ posts, selectedPost, setSelectedPost }: Props) {
     const post = posts.find((post) => post.id === id);
     if (!post) return;
     setSelectedPost(post);
+    closeDrawer();
   };
 
   const filterPosts = async (searchValue: string) => {
