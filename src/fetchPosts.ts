@@ -1,6 +1,6 @@
 const fetchPosts = async () => {
     try {
-        const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/notes`, {
+        const res = await fetch(`${process.env.REACT_APP_AI_SCRATCH_SERVER_HOST}/notes`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
