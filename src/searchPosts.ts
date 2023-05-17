@@ -1,6 +1,8 @@
+import { SERVER_HOST } from "./constants";
+
 const searchPosts = async (searchValue: string) => {
     try {
-        const res = await fetch(`${process.env.REACT_APP_AI_SCRATCH_SERVER_HOST}/notes/search?searchValue=${searchValue}`, {
+        const res = await fetch(`${SERVER_HOST}/notes/search?searchValue=${searchValue}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

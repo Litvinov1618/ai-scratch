@@ -1,8 +1,9 @@
 import { IPost } from "./App";
+import { SERVER_HOST } from "./constants";
 
 const updatePost = async (post: Omit<IPost, "embedding" | "id">, id: string) => {
     try {
-        const res = await fetch(`${process.env.REACT_APP_AI_SCRATCH_SERVER_HOST}/notes/${id}`, {
+        const res = await fetch(`${SERVER_HOST}/notes/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

@@ -1,8 +1,9 @@
 import { IPost } from "./App";
+import { SERVER_HOST } from "./constants";
 
 const addPost = async (post: Omit<IPost, 'id'>) => {
     try {
-        const res = await fetch(`${process.env.REACT_APP_AI_SCRATCH_SERVER_HOST}/notes`, {
+        const res = await fetch(`${SERVER_HOST}/notes`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
