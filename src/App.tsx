@@ -5,6 +5,7 @@ import DrawerButton from "./DrawerButton";
 import fetchPosts from "./fetchPosts";
 import useRequest from "use-request";
 import addPost from "./addPost";
+import loadingMessages from "./loadingMessages";
 
 export interface IPost {
   id: string;
@@ -17,6 +18,7 @@ function App() {
   const fetchPostsRequest = useRequest(fetchPosts);
   const [posts, setPosts] = useState<IPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 
   const editorInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -48,50 +50,63 @@ function App() {
   };
 
   useEffect(() => {
+    setLoadingMessageIndex(Math.floor(Math.random() * loadingMessages.length));
     initiatePosts();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (fetchPostsRequest.completed && !posts.length) {
       createEmptyPost();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchPostsRequest.completed, posts]);
 
   return (
-    <div className="drawer drawer-mobile">
-      <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content">
-        <div className="isolate p-4 lg:pl-1 h-screen max-sm:px-2 max-sm:py-4">
-          <div className="text-5xl text-center mb-7 relative">
-            AI Scratch
-            <div className="absolute top-0 bottom-0 left-0 flex align-middle">
-              <DrawerButton />
-            </div>
-          </div>
-          <div className="flex w-full max-sm:h-[88%] h-[90%]">
-            <Editor
-              posts={posts}
-              setPosts={setPosts}
-              selectedPost={selectedPost}
-              setSelectedPost={setSelectedPost}
-              editorInputRef={editorInputRef}
-              createEmptyPost={createEmptyPost}
-              addPostStatus={addPostRequest.status}
-            />
+    <div className="relative">
+      {fetchPostsRequest.pending && (
+        <div className="backdrop-blur-sm absolute top-0 left-0 right-0 bottom-0 z-20 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-5 w-[380px] whitespace-pre-wrap">
+            {
+              loadingMessages[loadingMessageIndex]
+            }
+            <progress className="progress w-56"></progress>
           </div>
         </div>
-      </div>
-      <div className="drawer-side">
-        <label htmlFor="my-drawer" className="drawer-overlay" />
-        <div className="flex bg-base-100 justify-between w-96 max-sm:w-[320px] max-lg:w-[500px]">
-          <Posts
-            selectedPost={selectedPost}
-            posts={posts}
-            setSelectedPost={setSelectedPost}
-          />
-          <div className="divider divider-horizontal ml-0 max-lg:invisible max-lg:w-0 max-lg:mr-0"></div>
+      )}
+      <div className="drawer drawer-mobile">
+        <input id="my-drawer" type="checkbox" className="drawer-toggle" />
+        <div className="drawer-content">
+          <div className="isolate p-4 lg:pl-1 h-screen max-sm:px-2 max-sm:py-4">
+            <div className="text-5xl text-center mb-7 relative">
+              AI Scratch
+              <div className="absolute top-0 bottom-0 left-0 flex align-middle">
+                <DrawerButton />
+              </div>
+            </div>
+            <div className="flex w-full max-sm:h-[88%] h-[90%]">
+              <Editor
+                posts={posts}
+                setPosts={setPosts}
+                selectedPost={selectedPost}
+                setSelectedPost={setSelectedPost}
+                editorInputRef={editorInputRef}
+                createEmptyPost={createEmptyPost}
+                addPostStatus={addPostRequest.status}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="drawer-side">
+          <label htmlFor="my-drawer" className="drawer-overlay" />
+          <div className="flex bg-base-100 justify-between w-96 max-sm:w-[320px] max-lg:w-[500px]">
+            <Posts
+              selectedPost={selectedPost}
+              posts={posts}
+              setSelectedPost={setSelectedPost}
+            />
+            <div className="divider divider-horizontal ml-0 max-lg:invisible max-lg:w-0 max-lg:mr-0"></div>
+          </div>
         </div>
       </div>
     </div>
