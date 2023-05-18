@@ -1,12 +1,77 @@
 import React, { useState } from "react";
+import {
+  Auth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 
 enum SignModalType {
   SignIn,
   SignUp,
 }
 
-function SignModal() {
+interface Props {
+  auth: Auth;
+}
+
+function SignModal({ auth }: Props) {
   const [signModalType, setSignModalType] = useState(SignModalType.SignIn);
+  const [email, setEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const clearErrors = () => {
+    setErrorMessage("");
+  };
+
+  const signIn = () => {
+    if (!currentPassword) {
+      setErrorMessage("Password is required");
+      return;
+    }
+
+    signInWithEmailAndPassword(auth, email, currentPassword).catch((error) => {
+      setErrorMessage(error.message);
+    });
+  };
+
+  const signUp = () => {
+    if (!newPassword) {
+      setErrorMessage("Password is required");
+      return;
+    }
+
+    if (!confirmPassword) {
+      setErrorMessage("Confirm password is required");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setErrorMessage("Passwords do not match");
+      return;
+    }
+
+    createUserWithEmailAndPassword(auth, email, newPassword).catch((error) => {
+      setErrorMessage(error.message);
+    });
+  };
+
+  const onSubmit = () => {
+    if (!email) {
+      setErrorMessage("Email is required");
+      return;
+    }
+
+    if (signModalType === SignModalType.SignIn) {
+      signIn();
+      return;
+    }
+
+    signUp();
+  };
+
   return (
     <div>
       <input
@@ -22,39 +87,91 @@ function SignModal() {
               Sign {signModalType === SignModalType.SignIn ? "in" : "up"} now
               and let’s hack the planet together.
             </h3>
-            <div className="flex flex-col gap-3 py-4">
+            <form className="flex flex-col gap-3 py-4">
+              {errorMessage && (
+                <div className="alert alert-error">
+                  <div className="flex-1">
+                    <label>{errorMessage}</label>
+                  </div>
+                </div>
+              )}
               <div className="form-control">
                 <label className="input-group">
                   <input
-                    type="text"
+                    type="email"
+                    id="email"
+                    name="email"
+                    autoComplete="email"
                     className="input input-bordered grow"
                     placeholder="Email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      clearErrors();
+                    }}
                   />
                 </label>
               </div>
-              <div className="form-control">
-                <label className="input-group">
-                  <input
-                    type="text"
-                    className="input input-bordered grow"
-                    placeholder="Password"
-                  />
-                </label>
-              </div>
-              {signModalType === SignModalType.SignUp && (
+              {signModalType === SignModalType.SignIn && (
                 <div className="form-control">
                   <label className="input-group">
                     <input
-                      type="text"
+                      type="password"
+                      id="current-password"
+                      name="current-password"
+                      autoComplete="current-password"
                       className="input input-bordered grow"
-                      placeholder="Confirm password"
+                      placeholder="Password"
+                      value={currentPassword}
+                      onChange={(e) => {
+                        setCurrentPassword(e.target.value);
+                        clearErrors();
+                      }}
                     />
                   </label>
                 </div>
               )}
-            </div>
+              {signModalType === SignModalType.SignUp && (
+                <>
+                  <div className="form-control">
+                    <label className="input-group">
+                      <input
+                        type="password"
+                        id="new-password"
+                        name="new-password"
+                        autoComplete="new-password"
+                        className="input input-bordered grow"
+                        placeholder="Password"
+                        value={newPassword}
+                        onChange={(e) => {
+                          setNewPassword(e.target.value);
+                          clearErrors();
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <div className="form-control">
+                    <label className="input-group">
+                      <input
+                        type="password"
+                        id="confirm-password"
+                        name="confirm-password"
+                        autoComplete="new-password"
+                        className="input input-bordered grow"
+                        placeholder="Confirm password"
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          clearErrors();
+                        }}
+                      />
+                    </label>
+                  </div>
+                </>
+              )}
+            </form>
             <div className="flex w-full justify-center pb-3">
-              <button className="btn btn-primary w-40">
+              <button className="btn btn-primary w-40" onClick={onSubmit}>
                 {signModalType === SignModalType.SignIn ? "Submit" : "Register"}
               </button>
             </div>

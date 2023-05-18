@@ -9,6 +9,9 @@ import fetchPosts from "./fetchPosts";
 import addPost from "./addPost";
 import registerSwipeListeners from "./registerSwipeListeners";
 import checkMobileDevice from "./checkMobileDevice";
+import { getAuth } from "firebase/auth";
+import app from "./firebase";
+import SignModal from "./SignModal";
 
 export interface IPost {
   id: string;
@@ -23,6 +26,9 @@ function App() {
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
+
+  const auth = getAuth(app);
+  const [user, setUser] = useState(auth.currentUser);
 
   const editorInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -61,6 +67,14 @@ function App() {
     setIsDrawerOpen(true);
   };
 
+  const logout = () => {
+    auth.signOut();
+  }
+
+  useEffect(() => {
+    return auth.onAuthStateChanged((user) => setUser(user));
+  }, [auth]);
+
   useEffect(() => {
     initiatePosts();
 
@@ -71,15 +85,14 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (fetchPostsRequest.completed && !posts.length) {
-      createEmptyPost();
-    }
+    if (!fetchPostsRequest.completed || posts.length) return;
+    createEmptyPost();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchPostsRequest.completed, posts]);
 
   return (
     <div className="relative">
-      {/* <SignModal /> */}
+      {!user && <SignModal auth={auth} />}
       <LoadingScreen fetchPostsRequest={fetchPostsRequest} />
       <Drawer
         content={
@@ -88,6 +101,7 @@ function App() {
             posts={posts}
             setSelectedPost={setSelectedPost}
             closeDrawer={closeDrawer}
+            logout={logout}
           />
         }
         isDrawerOpen={isDrawerOpen}

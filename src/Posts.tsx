@@ -10,9 +10,16 @@ interface Props {
   selectedPost: IPost | null;
   setSelectedPost: React.Dispatch<React.SetStateAction<IPost | null>>;
   closeDrawer: () => void;
+  logout: () => void;
 }
 
-function Posts({ posts, selectedPost, setSelectedPost, closeDrawer }: Props) {
+function Posts({
+  posts,
+  selectedPost,
+  setSelectedPost,
+  closeDrawer,
+  logout,
+}: Props) {
   const [visiblePosts, setVisiblePosts] = useState(posts);
   const [isSearching, setIsSearching] = useState(false);
   const [aiResponse, setAiResponse] = useState("");
@@ -55,9 +62,13 @@ function Posts({ posts, selectedPost, setSelectedPost, closeDrawer }: Props) {
   }, [posts, setVisiblePosts]);
 
   return (
-    <div className="max-lg:p-3 p-4 w-full">
+    <div className="max-lg:p-3 p-4 w-full relative">
       <div className="form-control hover:bg-transparent pb-1">
-        <PostsSearch onSearch={onSearch} isSearching={isSearching} clearSearchResults={clearSearchResults} />
+        <PostsSearch
+          onSearch={onSearch}
+          isSearching={isSearching}
+          clearSearchResults={clearSearchResults}
+        />
         <AIResponseBubble aiResponse={aiResponse} />
       </div>
       {visiblePosts.length ? (
@@ -73,6 +84,11 @@ function Posts({ posts, selectedPost, setSelectedPost, closeDrawer }: Props) {
           ))}
         </ul>
       ) : null}
+      <div className="absolute bottom-0 left-0 right-0 flex justify-center p-2">
+        <button className="btn btn-outline" onClick={logout}>
+          Logout
+        </button>
+      </div>
     </div>
   );
 }
