@@ -79,6 +79,7 @@ function App() {
 
   return (
     <div className="relative">
+      {/* <SignModal /> */}
       <LoadingScreen fetchPostsRequest={fetchPostsRequest} />
       <Drawer
         content={

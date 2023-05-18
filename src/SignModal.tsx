@@ -1,45 +1,90 @@
-import React from 'react';
+import React, { useState } from "react";
+
+enum SignModalType {
+  SignIn,
+  SignUp,
+}
 
 function SignModal() {
-    return (
-        <div className="modal" id="modal">
-        <div className="modal__content">
-            <div className="modal__header">
-            <h2 className="modal__title">Sign in</h2>
-            <button className="modal__close" id="close">
-                &times;
-            </button>
-            </div>
-            <div className="modal__body">
-            <form className="form">
-                <div className="form__group">
-                <label htmlFor="email" className="form__label">
-                    Email
+  const [signModalType, setSignModalType] = useState(SignModalType.SignIn);
+  return (
+    <div>
+      <input
+        type="checkbox"
+        id="my-modal"
+        className="modal-toggle"
+        defaultChecked
+      />
+      <div className="modal backdrop-blur-sm">
+        <div className="modal-box p-0">
+          <div className="p-6 pb-0">
+            <h3 className="font-bold text-lg text-center">
+              Sign {signModalType === SignModalType.SignIn ? "in" : "up"} now
+              and let’s hack the planet together.
+            </h3>
+            <div className="flex flex-col gap-3 py-4">
+              <div className="form-control">
+                <label className="input-group">
+                  <input
+                    type="text"
+                    className="input input-bordered grow"
+                    placeholder="Email"
+                  />
                 </label>
-                <input
-                    type="email"
-                    className="form__input"
-                    id="email"
-                    placeholder="Enter email"
-                    required
-                />
-                </div>
-                <div className="form__group">
-                <label htmlFor="password" className="form__label">
-                    Password
+              </div>
+              <div className="form-control">
+                <label className="input-group">
+                  <input
+                    type="text"
+                    className="input input-bordered grow"
+                    placeholder="Password"
+                  />
                 </label>
-                <input
-                    type="password"
-                    className="form__input"
-                    id="password"
-                    placeholder="Enter password"
-                    required
-                />
+              </div>
+              {signModalType === SignModalType.SignUp && (
+                <div className="form-control">
+                  <label className="input-group">
+                    <input
+                      type="text"
+                      className="input input-bordered grow"
+                      placeholder="Confirm password"
+                    />
+                  </label>
                 </div>
-                <button className="btn btn--primary btn--block">Sign in</button>
-            </form>
+              )}
             </div>
+            <div className="flex w-full justify-center pb-3">
+              <button className="btn btn-primary w-40">
+                {signModalType === SignModalType.SignIn ? "Submit" : "Register"}
+              </button>
+            </div>
+          </div>
+          <ul className="menu menu-horizontal bg-base-100 rounded-box w-full">
+            <li className="grow">
+              <button
+                className={`${
+                  signModalType === SignModalType.SignIn ? "btn-active" : ""
+                } btn btn-outline w-full flex justify-center`}
+                onClick={() => setSignModalType(SignModalType.SignIn)}
+              >
+                Sign in
+              </button>
+            </li>
+            <li className="grow">
+              <button
+                className={`${
+                  signModalType === SignModalType.SignUp ? "btn-active" : ""
+                } btn btn-outline w-full flex justify-center`}
+                onClick={() => setSignModalType(SignModalType.SignUp)}
+              >
+                Sign up
+              </button>
+            </li>
+          </ul>
         </div>
-        </div>
-    );
+      </div>
+    </div>
+  );
 }
+
+export default SignModal;
