@@ -90,6 +90,8 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchPostsRequest.completed, posts]);
 
+  console.log(process.env.REACT_APP_AI_SCRATCH_SERVER_HOST);
+
   return (
     <div className="relative">
       {!user && <SignModal auth={auth} />}
