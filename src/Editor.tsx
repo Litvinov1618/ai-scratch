@@ -78,7 +78,7 @@ function Editor({
   const controlsDisabled = isPostAdding || isPostDeleting;
 
   return (
-    <div className="form-control w-full">
+    <div className="form-control flex w-full max-sm:h-[88%] h-[90%]">
       <EditorMenu
         selectedPost={selectedPost}
         handleDelete={handleDelete}

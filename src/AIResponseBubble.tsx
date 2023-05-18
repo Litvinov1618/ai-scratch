@@ -5,8 +5,8 @@ interface Props {
 }
 
 const AIResponseBubble = ({ aiResponse }: Props) => {
-  return (
-    <div className="chat chat-start">
+  return aiResponse ? (
+    <div className="chat chat-start pt-3">
       <div className="chat-image avatar">
         <div className="w-10 rounded-full">
           <svg
@@ -29,7 +29,7 @@ const AIResponseBubble = ({ aiResponse }: Props) => {
         {aiResponse}
       </div>
     </div>
-  );
+  ) : null;
 };
 
 export default AIResponseBubble;
