@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useRequest from "use-request";
 import { getAuth } from "firebase/auth";
 import Editor from "./Editor";
@@ -7,7 +7,7 @@ import Header from "./Header";
 import LoadingScreen from "./LoadingScreen";
 import Drawer from "./Drawer";
 import SignModal from "./SignModal";
-import fetchPosts from "./fetchPosts";
+import getAllPosts from "./getAllPosts";
 import addPost from "./addPost";
 import registerSwipeListeners from "./registerSwipeListeners";
 import checkMobileDevice from "./checkMobileDevice";
@@ -21,11 +21,12 @@ export interface IPost {
 
 function App() {
   const addPostRequest = useRequest(addPost);
-  const fetchPostsRequest = useRequest(fetchPosts);
+  const fetchPostsRequest = useRequest(getAllPosts);
   const [posts, setPosts] = useState<IPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [isUserChecked, setIsUserChecked] = useState(false);
 
   const auth = getAuth(app);
   const [user, setUser] = useState(auth.currentUser);
@@ -33,11 +34,10 @@ function App() {
   const editorInputRef = useRef<HTMLTextAreaElement>(null);
 
   const createEmptyPost = async () => {
-    const newSelectedPost: Omit<IPost, "id"> = {
+    const newPost = await addPostRequest.execute({
       text: "",
       date: Date.now(),
-    };
-    const newPost = await addPostRequest.execute(newSelectedPost);
+    });
 
     setSelectedPost(newPost);
 
@@ -51,6 +51,7 @@ function App() {
     const notes = await fetchPostsRequest.execute();
 
     if (!notes?.length) {
+      await createEmptyPost();
       return;
     }
 
@@ -69,10 +70,18 @@ function App() {
 
   const logout = () => {
     auth.signOut();
-  }
+  };
 
   useEffect(() => {
-    return auth.onAuthStateChanged((user) => setUser(user));
+    return auth.onAuthStateChanged((user) => {
+      if (!isUserChecked) setIsUserChecked(true);
+      if (user?.email) {
+        sessionStorage.setItem("user_email", user.email);
+        initiatePosts();
+      }
+      setUser(user);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);
 
   useEffect(() => {
@@ -92,8 +101,8 @@ function App() {
 
   return (
     <div className="relative">
-      {!user && <SignModal auth={auth} />}
-      <LoadingScreen fetchPostsRequest={fetchPostsRequest} />
+      {isUserChecked && !user && <SignModal auth={auth} />}
+      {(!fetchPostsRequest.completed || !isUserChecked) && <LoadingScreen />}
       <Drawer
         content={
           <Posts

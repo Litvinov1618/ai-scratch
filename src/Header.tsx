@@ -1,4 +1,3 @@
-import React from "react";
 import DrawerButton from "./DrawerButton";
 
 interface Props {

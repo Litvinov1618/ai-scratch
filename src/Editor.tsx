@@ -1,10 +1,9 @@
-import React from "react";
 import { IPost } from "./App";
 import EditorMenu from "./EditorMenu";
 import useDebounce from "./useDebounce";
 import deletePost from "./deletePost";
 import updatePost from "./updatePost";
-import fetchPosts from "./fetchPosts";
+import getAllPosts from "./getAllPosts";
 import useRequest, { UseRequestStatus } from "use-request";
 
 interface Props {
@@ -28,7 +27,7 @@ function Editor({
 }: Props) {
   const deletePostRequest = useRequest(deletePost);
   const updatePostRequest = useRequest(updatePost);
-  const fetchPostsRequest = useRequest(fetchPosts);
+  const fetchPostsRequest = useRequest(getAllPosts);
 
   const debounce = useDebounce();
 
