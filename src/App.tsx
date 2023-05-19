@@ -85,8 +85,6 @@ function App() {
   }, [auth]);
 
   useEffect(() => {
-    initiatePosts();
-
     setIsMobileDevice(checkMobileDevice());
 
     return registerSwipeListeners(closeDrawer, openDrawer);
