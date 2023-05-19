@@ -1,17 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import useRequest from "use-request";
+import { getAuth } from "firebase/auth";
 import Editor from "./Editor";
 import Posts from "./Posts";
 import Header from "./Header";
 import LoadingScreen from "./LoadingScreen";
 import Drawer from "./Drawer";
+import SignModal from "./SignModal";
 import fetchPosts from "./fetchPosts";
 import addPost from "./addPost";
 import registerSwipeListeners from "./registerSwipeListeners";
 import checkMobileDevice from "./checkMobileDevice";
-import { getAuth } from "firebase/auth";
 import app from "./firebase";
-import SignModal from "./SignModal";
 
 export interface IPost {
   id: string;
@@ -41,7 +41,7 @@ function App() {
 
     setSelectedPost(newPost);
 
-    const updatedPosts = [...posts, newPost];
+    const updatedPosts = [newPost, ...posts];
     setPosts(updatedPosts);
 
     editorInputRef.current?.focus();
@@ -89,8 +89,6 @@ function App() {
     createEmptyPost();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchPostsRequest.completed, posts]);
-
-  console.log(process.env.REACT_APP_AI_SCRATCH_SERVER_HOST);
 
   return (
     <div className="relative">
