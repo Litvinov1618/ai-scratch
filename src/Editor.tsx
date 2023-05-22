@@ -1,10 +1,14 @@
+import useRequest, { UseRequestStatus } from "use-request";
+import ReactQuill from "react-quill";
+import { DeltaStatic } from "quill";
 import { IPost } from "./App";
 import EditorMenu from "./EditorMenu";
 import useDebounce from "./useDebounce";
 import deletePost from "./deletePost";
 import updatePost from "./updatePost";
 import getAllPosts from "./getAllPosts";
-import useRequest, { UseRequestStatus } from "use-request";
+import "react-quill/dist/quill.snow.css";
+import "./quillEditorStylesOverride.css";
 
 interface Props {
   posts: IPost[];
@@ -48,24 +52,27 @@ function Editor({
     selectFirstPost(updatedPosts);
   };
 
-  const onTextChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const onTextChange = async (delta: DeltaStatic, text: string) => {
     if (!selectedPost) {
       return;
     }
 
     const updatedPost = {
-      ...selectedPost,
-      text: e.target.value,
+      id: selectedPost.id,
+      text,
+      delta,
       date: Date.now(),
     };
 
     setSelectedPost(updatedPost);
 
     debounce(async () => {
-      await updatePostRequest.execute(
-        { text: updatedPost.text, date: updatedPost.date },
-        selectedPost.id
-      );
+      await updatePostRequest.execute({
+        text: updatedPost.text,
+        date: updatedPost.date,
+        delta: updatedPost.delta,
+        id: updatedPost.id,
+      });
       const updatedPosts = await fetchPostsRequest.execute();
       setPosts(updatedPosts);
     }, 1000);
@@ -85,13 +92,23 @@ function Editor({
         posts={posts}
         controlsDisabled={controlsDisabled}
       />
-      <textarea
-        className="textarea textarea-bordered resize-none placeholder-black h-full"
+      <ReactQuill
+        theme="snow"
+        value={selectedPost?.delta}
+        onChange={(_content, _delta, _source, editor) => {
+          if (controlsDisabled) return;
+          const delta = editor.getContents();
+          const text = editor.getText().replace(/\n/g, " ").trim();
+          onTextChange(delta, text);
+        }}
+        modules={{
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: "ordered" }, { list: "bullet" }],
+            ["image", "code-block"],
+          ],
+        }}
         placeholder="What's on your mind?"
-        value={selectedPost?.text || ""}
-        onChange={onTextChange}
-        ref={editorInputRef}
-        disabled={controlsDisabled}
       />
     </div>
   );

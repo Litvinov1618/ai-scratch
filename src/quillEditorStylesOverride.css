@@ -1,0 +1,12 @@
+.ql-container {
+    height: 70vh;
+}
+
+.ql-snow {
+    font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;
+}
+
+.ql-toolbar.ql-snow,
+.ql-container.ql-snow {
+    border: 1px solid #413f00;
+}

@@ -12,10 +12,12 @@ import addPost from "./addPost";
 import registerSwipeListeners from "./registerSwipeListeners";
 import checkMobileDevice from "./checkMobileDevice";
 import app from "./firebase";
+import ReactQuill from "react-quill";
 
 export interface IPost {
   id: string;
   text: string;
+  delta: ReactQuill.Value;
   date: number;
 }
 
@@ -34,9 +36,15 @@ function App() {
   const editorInputRef = useRef<HTMLTextAreaElement>(null);
 
   const createEmptyPost = async () => {
+    const userEmail = sessionStorage.getItem("user_email");
+    if (!userEmail) {
+      console.error("User email not found");
+      return;
+    }
+
     const newPost = await addPostRequest.execute({
-      text: "",
       date: Date.now(),
+      user_email: userEmail,
     });
 
     setSelectedPost(newPost);
@@ -81,7 +89,7 @@ function App() {
       }
       setUser(user);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);
 
   useEffect(() => {

@@ -1,8 +1,8 @@
 import { SERVER_HOST } from "./constants";
 
-const searchPosts = async (searchValue: string) => {
+const searchPosts = async (searchValue: string, userEmail: string) => {
     try {
-        const res = await fetch(`${SERVER_HOST}/notes/search?searchValue=${searchValue}`, {
+        const res = await fetch(`${SERVER_HOST}/notes/search?search_value=${searchValue}&user_email=${userEmail}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

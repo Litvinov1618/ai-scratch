@@ -1,9 +1,9 @@
 import { IPost } from "./App";
 import { SERVER_HOST } from "./constants";
 
-const updatePost = async (post: Omit<IPost, "id">, id: string) => {
+const updatePost = async (post: IPost) => {
     try {
-        const res = await fetch(`${SERVER_HOST}/notes/${id}`, {
+        const res = await fetch(`${SERVER_HOST}/notes/${post.id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

@@ -34,7 +34,14 @@ function Posts({
   const filterPosts = async (searchValue: string) => {
     setIsSearching(true);
 
-    const { posts, aiResponse } = await searchPosts(searchValue);
+    const userEmail = sessionStorage.getItem("user_email");
+    if (!userEmail) {
+      setIsSearching(false);
+      console.error("User email not found");
+      return;
+    }
+
+    const { posts, aiResponse } = await searchPosts(searchValue, userEmail);
 
     if (aiResponse) setAiResponse(aiResponse);
 
@@ -84,7 +91,7 @@ function Posts({
           ))}
         </ul>
       ) : null}
-      <div className="absolute bottom-0 left-0 right-0 flex justify-center p-2">
+      <div className="absolute bottom-0 left-0 right-0 flex justify-center p-2 bg-base-100">
         <button className="btn btn-outline" onClick={logout}>
           Logout
         </button>
