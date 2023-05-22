@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import useRequest, { UseRequestStatus } from "use-request";
 import ReactQuill from "react-quill";
 import { DeltaStatic } from "quill";
@@ -33,6 +34,13 @@ function Editor({
   const updatePostRequest = useRequest(updatePost);
   const fetchPostsRequest = useRequest(getAllPosts);
 
+  const [value, setValue] = useState<ReactQuill.Value | undefined>();
+
+  useEffect(() => {
+    if (!selectedPost) return;
+    setValue(selectedPost?.delta);
+  }, [selectedPost]);
+
   const debounce = useDebounce();
 
   const selectFirstPost = (posts: IPost[]) => {
@@ -53,12 +61,14 @@ function Editor({
   };
 
   const onTextChange = async (delta: DeltaStatic, text: string) => {
+    setValue(delta);
+
     if (!selectedPost) {
       return;
     }
 
     const updatedPost = {
-      id: selectedPost.id,
+      ...selectedPost,
       text,
       delta,
       date: Date.now(),
@@ -94,7 +104,7 @@ function Editor({
       />
       <ReactQuill
         theme="snow"
-        value={selectedPost?.delta}
+        value={value}
         onChange={(_content, _delta, _source, editor) => {
           if (controlsDisabled) return;
           const delta = editor.getContents();
