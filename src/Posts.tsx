@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import Post from "./Post";
 import { IPost } from "./App";
-import AIResponseBubble from "./AIResponseBubble";
+import AIResponseBubble, {
+  AIResponse,
+  AIResponseType,
+} from "./AIResponseBubble";
 import PostsSearch from "./PostsSearch";
 import searchPosts from "./searchPosts";
 
@@ -22,7 +25,10 @@ function Posts({
 }: Props) {
   const [visiblePosts, setVisiblePosts] = useState(posts);
   const [isSearching, setIsSearching] = useState(false);
-  const [aiResponse, setAiResponse] = useState("");
+  const [aiResponse, setAiResponse] = useState<AIResponse>({
+    message: "",
+    type: AIResponseType.Info,
+  });
 
   const selectPost = (id: string) => {
     const post = posts.find((post) => post.id === id);
@@ -41,9 +47,15 @@ function Posts({
       return;
     }
 
-    const { posts, aiResponse } = await searchPosts(searchValue, userEmail);
+    const { posts, aiResponse, error } = await searchPosts(
+      searchValue,
+      userEmail
+    );
 
-    if (aiResponse) setAiResponse(aiResponse);
+    setAiResponse({
+      message: aiResponse,
+      type: error ? AIResponseType.Error : AIResponseType.Info,
+    });
 
     setVisiblePosts(posts);
     setIsSearching(false);
@@ -60,12 +72,18 @@ function Posts({
 
   const clearSearchResults = () => {
     setVisiblePosts(posts);
-    setAiResponse("");
+    setAiResponse({
+      message: "",
+      type: AIResponseType.Info,
+    });
   };
 
   useEffect(() => {
     setVisiblePosts(posts);
-    setAiResponse("");
+    setAiResponse({
+      message: "",
+      type: AIResponseType.Info,
+    });
   }, [posts, setVisiblePosts]);
 
   return (
@@ -78,19 +96,21 @@ function Posts({
         />
         <AIResponseBubble aiResponse={aiResponse} />
       </div>
-      {visiblePosts.length ? (
-        <ul className="menu bg-base-100">
-          {visiblePosts.map((post) => (
-            <Post
-              key={post.date}
-              post={post}
-              isActive={selectedPost?.id === post.id}
-              selectPost={selectPost}
-              selectedPost={selectedPost}
-            />
-          ))}
-        </ul>
-      ) : null}
+      <div className="overflow-auto h-[87%] no-scrollbar">
+        {visiblePosts.length ? (
+          <ul className="menu bg-base-100">
+            {visiblePosts.map((post) => (
+              <Post
+                key={post.date}
+                post={post}
+                isActive={selectedPost?.id === post.id}
+                selectPost={selectPost}
+                selectedPost={selectedPost}
+              />
+            ))}
+          </ul>
+        ) : null}
+      </div>
       <div className="absolute bottom-0 left-0 right-0 flex justify-center p-2 bg-base-100">
         <button className="btn btn-outline" onClick={logout}>
           Logout

@@ -1,5 +1,42 @@
+.ql-toolbar .ql-stroke {
+    fill: none;
+    stroke: #413f00;
+}
+
+.ql-toolbar .ql-fill {
+    fill: #413f00;
+    stroke: none;
+}
+
+.ql-toolbar .ql-picker {
+    color: #413f00;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke {
+    stroke: #ff7598;
+    fill: none;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-fill {
+    fill: #ff7598;
+    stroke: none;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-picker,
+.ql-snow.ql-toolbar button.ql-active .ql-picker {
+    color: #ff7598;
+}
+
 .ql-container {
     height: 70vh;
+}
+
+@media (max-width: 768px) {
+    .ql-container {
+        height: 67vh;
+    }
 }
 
 .ql-snow {

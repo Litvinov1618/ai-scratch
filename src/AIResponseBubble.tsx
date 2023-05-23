@@ -1,9 +1,19 @@
+export enum AIResponseType {
+  Error = "error",
+  Info = "info",
+}
+
+export interface AIResponse {
+  message: string;
+  type: AIResponseType;
+}
+
 interface Props {
-  aiResponse: string;
+  aiResponse: AIResponse;
 }
 
 const AIResponseBubble = ({ aiResponse }: Props) => {
-  return aiResponse ? (
+  return aiResponse.message ? (
     <div className="chat chat-start pt-3">
       <div className="chat-image avatar">
         <div className="w-10 rounded-full">
@@ -23,8 +33,12 @@ const AIResponseBubble = ({ aiResponse }: Props) => {
           </svg>
         </div>
       </div>
-      <div className="chat-bubble">
-        {aiResponse}
+      <div
+        className={`chat-bubble ${
+          aiResponse.type === AIResponseType.Error ? "chat-bubble-error" : ""
+        }`}
+      >
+        {aiResponse.message}
       </div>
     </div>
   ) : null;

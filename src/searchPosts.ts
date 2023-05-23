@@ -10,6 +10,14 @@ const searchPosts = async (searchValue: string, userEmail: string) => {
         });
         const posts = await res.json();
 
+        if (posts.error) {
+            return {
+                posts: [],
+                aiResponse: "Error while searching posts: " + posts.error,
+                error: true,
+            }
+        }
+
         return posts;
     } catch (error) {
         console.log(error);
