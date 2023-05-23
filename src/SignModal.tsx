@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   Auth,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
 
@@ -17,13 +18,15 @@ interface Props {
 function SignModal({ auth }: Props) {
   const [signModalType, setSignModalType] = useState(SignModalType.SignIn);
   const [email, setEmail] = useState("");
+  const [isEmailSent, setIsEmailSent] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const clearErrors = () => {
+  const clearMessages = () => {
     setErrorMessage("");
+    setIsEmailSent(false);
   };
 
   const signIn = () => {
@@ -72,6 +75,22 @@ function SignModal({ auth }: Props) {
     signUp();
   };
 
+  const resetPassword = () => {
+    if (!email) {
+      setErrorMessage("Email is required");
+      return;
+    }
+
+    setErrorMessage("");
+    sendPasswordResetEmail(auth, email)
+      .then((res) => {
+        setIsEmailSent(true);
+      })
+      .catch((error) => {
+        setErrorMessage(error.message);
+      });
+  };
+
   return (
     <div>
       <input
@@ -95,6 +114,16 @@ function SignModal({ auth }: Props) {
                   </div>
                 </div>
               )}
+              {isEmailSent && (
+                <div className="alert alert-success">
+                  <div className="flex-1">
+                    <label>
+                      Email with password reset instructions has been sent to
+                      your email address.
+                    </label>
+                  </div>
+                </div>
+              )}
               <div className="form-control">
                 <label className="input-group">
                   <input
@@ -107,7 +136,7 @@ function SignModal({ auth }: Props) {
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
-                      clearErrors();
+                      clearMessages();
                     }}
                   />
                 </label>
@@ -125,7 +154,7 @@ function SignModal({ auth }: Props) {
                       value={currentPassword}
                       onChange={(e) => {
                         setCurrentPassword(e.target.value);
-                        clearErrors();
+                        clearMessages();
                       }}
                     />
                   </label>
@@ -145,7 +174,7 @@ function SignModal({ auth }: Props) {
                         value={newPassword}
                         onChange={(e) => {
                           setNewPassword(e.target.value);
-                          clearErrors();
+                          clearMessages();
                         }}
                       />
                     </label>
@@ -162,7 +191,7 @@ function SignModal({ auth }: Props) {
                         value={confirmPassword}
                         onChange={(e) => {
                           setConfirmPassword(e.target.value);
-                          clearErrors();
+                          clearMessages();
                         }}
                       />
                     </label>
@@ -175,6 +204,13 @@ function SignModal({ auth }: Props) {
                 {signModalType === SignModalType.SignIn ? "Submit" : "Register"}
               </button>
             </div>
+            {signModalType === SignModalType.SignIn && (
+              <div className="flex justify-center pb-3">
+                <button className="link link-primary" onClick={resetPassword}>
+                  I forgot my password
+                </button>
+              </div>
+            )}
           </div>
           <ul className="menu menu-horizontal bg-base-100 rounded-box w-full">
             <li className="grow">
