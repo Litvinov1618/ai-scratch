@@ -1,22 +1,22 @@
-import { IPost } from "./App";
+import { INote } from "./App";
 import formatDate from "./formatDate";
 
 interface Props {
-  selectedPost: IPost | null;
+  selectedNotes: INote | null;
   handleDelete: (id: string) => void;
-  createPost: () => void;
-  posts: IPost[];
+  createNote: () => void;
+  notes: INote[];
   controlsDisabled: boolean;
 }
 
-function EditorMenu({ selectedPost, handleDelete, createPost, posts, controlsDisabled }: Props) {
-  const createButtonDisabled = controlsDisabled || (!!posts.length && !selectedPost?.text);
-  const deleteButtonDisabled = controlsDisabled || posts?.length === 1 || !selectedPost;
+function EditorMenu({ selectedNotes, handleDelete, createNote, notes, controlsDisabled }: Props) {
+  const createButtonDisabled = controlsDisabled || (!!notes.length && !selectedNotes?.text);
+  const deleteButtonDisabled = controlsDisabled || notes?.length === 1 || !selectedNotes;
 
   return (
     <ul className="menu menu-horizontal bg-base-100 rounded-box w-full justify-between py-3">
       <li className={createButtonDisabled ? 'disabled' : ''}>
-        <button onClick={createPost} className="px-1" disabled={createButtonDisabled}>
+        <button onClick={createNote} className="px-1" disabled={createButtonDisabled}>
           <svg
             className="h-5 w-5"
             fill="none"
@@ -37,8 +37,8 @@ function EditorMenu({ selectedPost, handleDelete, createPost, posts, controlsDis
       <li>
         <div className="flex justify-center hover:bg-inherit hover:cursor-default">
           <span className="badge">
-            {selectedPost?.date
-              ? formatDate(+selectedPost.date).toString()
+            {selectedNotes?.date
+              ? formatDate(+selectedNotes.date).toString()
               : formatDate(Date.now())}
           </span>
         </div>
@@ -46,8 +46,8 @@ function EditorMenu({ selectedPost, handleDelete, createPost, posts, controlsDis
       <li className={deleteButtonDisabled ? 'disabled' : ''}>
         <button
           onClick={() => {
-            if (!selectedPost) return;
-            handleDelete(selectedPost.id);
+            if (!selectedNotes) return;
+            handleDelete(selectedNotes.id);
           }}
           className="px-1"
           disabled={deleteButtonDisabled}

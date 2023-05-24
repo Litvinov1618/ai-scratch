@@ -1,43 +1,43 @@
 import { useEffect, useState } from "react";
-import Post from "./Post";
-import { IPost } from "./App";
+import Note from "./Note";
+import { INote } from "./App";
 import AIResponseBubble, {
   AIResponse,
   AIResponseType,
 } from "./AIResponseBubble";
-import PostsSearch from "./PostsSearch";
-import searchPosts from "./searchPosts";
+import NotesSearch from "./NotesSearch";
+import searchNotes from "./searchNotes";
 
 interface Props {
-  posts: IPost[];
-  selectedPost: IPost | null;
-  setSelectedPost: React.Dispatch<React.SetStateAction<IPost | null>>;
+  notes: INote[];
+  selectedNote: INote | null;
+  setSelectedNote: React.Dispatch<React.SetStateAction<INote | null>>;
   closeDrawer: () => void;
   logout: () => void;
 }
 
-function Posts({
-  posts,
-  selectedPost,
-  setSelectedPost,
+function Notes({
+  notes,
+  selectedNote,
+  setSelectedNote,
   closeDrawer,
   logout,
 }: Props) {
-  const [visiblePosts, setVisiblePosts] = useState(posts);
+  const [visibleNotes, setVisibleNotes] = useState(notes);
   const [isSearching, setIsSearching] = useState(false);
   const [aiResponse, setAiResponse] = useState<AIResponse>({
     message: "",
     type: AIResponseType.Info,
   });
 
-  const selectPost = (id: string) => {
-    const post = posts.find((post) => post.id === id);
-    if (!post) return;
-    setSelectedPost(post);
+  const selectNote = (id: string) => {
+    const note = notes.find((note) => note.id === id);
+    if (!note) return;
+    setSelectedNote(note);
     closeDrawer();
   };
 
-  const filterPosts = async (searchValue: string) => {
+  const filterNotes = async (searchValue: string) => {
     setIsSearching(true);
 
     const userEmail = sessionStorage.getItem("user_email");
@@ -47,7 +47,7 @@ function Posts({
       return;
     }
 
-    const { posts, aiResponse, error } = await searchPosts(
+    const { notes, aiResponse, error } = await searchNotes(
       searchValue,
       userEmail
     );
@@ -57,21 +57,21 @@ function Posts({
       type: error ? AIResponseType.Error : AIResponseType.Info,
     });
 
-    setVisiblePosts(posts);
+    setVisibleNotes(notes);
     setIsSearching(false);
   };
 
   const onSearch = (searchValue: string) => {
     if (!searchValue) {
-      setVisiblePosts(posts);
+      setVisibleNotes(notes);
       return;
     }
 
-    filterPosts(searchValue);
+    filterNotes(searchValue);
   };
 
   const clearSearchResults = () => {
-    setVisiblePosts(posts);
+    setVisibleNotes(notes);
     setAiResponse({
       message: "",
       type: AIResponseType.Info,
@@ -79,17 +79,17 @@ function Posts({
   };
 
   useEffect(() => {
-    setVisiblePosts(posts);
+    setVisibleNotes(notes);
     setAiResponse({
       message: "",
       type: AIResponseType.Info,
     });
-  }, [posts, setVisiblePosts]);
+  }, [notes, setVisibleNotes]);
 
   return (
     <div className="max-lg:p-3 p-4 w-full relative">
       <div className="form-control hover:bg-transparent pb-1">
-        <PostsSearch
+        <NotesSearch
           onSearch={onSearch}
           isSearching={isSearching}
           clearSearchResults={clearSearchResults}
@@ -97,21 +97,21 @@ function Posts({
         <AIResponseBubble aiResponse={aiResponse} />
       </div>
       <div className="overflow-auto h-[87%] no-scrollbar">
-        {visiblePosts.length ? (
+        {visibleNotes.length ? (
           <ul className="menu bg-base-100">
-            {visiblePosts.map((post) => (
-              <Post
-                key={post.date}
-                post={post}
-                isActive={selectedPost?.id === post.id}
-                selectPost={selectPost}
-                selectedPost={selectedPost}
+            {visibleNotes.map((note) => (
+              <Note
+                key={note.date}
+                note={note}
+                isActive={selectedNote?.id === note.id}
+                selectNote={selectNote}
+                selectedNote={selectedNote}
               />
             ))}
           </ul>
         ) : null}
       </div>
-      <div className="absolute bottom-0 left-0 right-0 flex justify-center p-2 bg-base-100">
+      <div className="absolute bottom-0 left-0 right-0 flex justify-center p-2 bg-base-100 border-t border-gray-950">
         <button className="btn btn-outline" onClick={logout}>
           Logout
         </button>
@@ -120,4 +120,4 @@ function Posts({
   );
 }
 
-export default Posts;
+export default Notes;

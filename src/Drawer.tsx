@@ -20,7 +20,7 @@ function Drawer({
         checked={isDrawerOpen}
         onChange={() => setIsDrawerOpen(!isDrawerOpen)}
       />
-      <div className="drawer-content isolate p-4 lg:pl-1 h-screen max-sm:px-2 max-sm:py-4">
+      <div className="drawer-content isolate p-4 lg:pl-1 max-sm:px-2 max-sm:py-4 flex flex-col flex-1 h-[100%]">
         {children}
       </div>
       <div className="drawer-side">

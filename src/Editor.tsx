@@ -2,104 +2,119 @@ import { useEffect, useState } from "react";
 import useRequest, { UseRequestStatus } from "use-request";
 import ReactQuill from "react-quill";
 import { DeltaStatic } from "quill";
-import { IPost } from "./App";
+import { INote } from "./App";
 import EditorMenu from "./EditorMenu";
 import useDebounce from "./useDebounce";
-import deletePost from "./deletePost";
-import updatePost from "./updatePost";
-import getAllPosts from "./getAllPosts";
+import deleteNote from "./deleteNote";
+import updateNote from "./updateNote";
 import "react-quill/dist/quill.snow.css";
 import "./quillEditorStylesOverride.css";
 
 interface Props {
-  posts: IPost[];
-  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
-  selectedPost: IPost | null;
-  setSelectedPost: React.Dispatch<React.SetStateAction<IPost | null>>;
+  notes: INote[];
+  setNotes: React.Dispatch<React.SetStateAction<INote[]>>;
+  selectedNote: INote | null;
+  setSelectedNote: React.Dispatch<React.SetStateAction<INote | null>>;
   editorInputRef: React.RefObject<HTMLTextAreaElement>;
-  createEmptyPost: () => void;
-  addPostStatus: UseRequestStatus;
+  createEmptyNote: () => void;
+  addNoteStatus: UseRequestStatus;
+  fetchAllNotes: (userEmail: string) => Promise<INote[]>;
 }
 
 function Editor({
-  posts,
-  setPosts,
-  selectedPost,
-  setSelectedPost,
+  notes,
+  setNotes,
+  selectedNote,
+  setSelectedNote,
   editorInputRef,
-  createEmptyPost,
-  addPostStatus,
+  createEmptyNote,
+  addNoteStatus,
+  fetchAllNotes,
 }: Props) {
-  const deletePostRequest = useRequest(deletePost);
-  const updatePostRequest = useRequest(updatePost);
-  const fetchPostsRequest = useRequest(getAllPosts);
+  const deleteNoteRequest = useRequest(deleteNote);
+  const updateNoteRequest = useRequest(updateNote);
 
   const [value, setValue] = useState<ReactQuill.Value | undefined>();
 
   useEffect(() => {
-    if (!selectedPost) return;
-    setValue(selectedPost?.delta);
-  }, [selectedPost]);
+    if (!selectedNote) return;
+    setValue(selectedNote?.delta);
+  }, [selectedNote]);
 
   const debounce = useDebounce();
 
-  const selectFirstPost = (posts: IPost[]) => {
-    if (!posts.length) {
-      setSelectedPost(null);
+  const selectFirstNote = (notes: INote[]) => {
+    if (!notes.length) {
+      setSelectedNote(null);
       editorInputRef.current?.focus();
       return;
     }
-    setSelectedPost(posts[0]);
+    setSelectedNote(notes[0]);
     editorInputRef.current?.focus();
   };
 
   const handleDelete = async (id: string) => {
-    await deletePostRequest.execute(id);
-    const updatedPosts = await fetchPostsRequest.execute();
-    setPosts(updatedPosts);
-    selectFirstPost(updatedPosts);
+    await deleteNoteRequest.execute(id);
+
+    const userEmail = sessionStorage.getItem("user_email");
+
+    if (!userEmail) {
+      console.error("User email not found");
+      return;
+    }
+
+    const updatedNotes = await fetchAllNotes(userEmail);
+    setNotes(updatedNotes);
+    selectFirstNote(updatedNotes);
   };
 
   const onTextChange = async (delta: DeltaStatic, text: string) => {
     setValue(delta);
 
-    if (!selectedPost) {
+    if (!selectedNote) {
       return;
     }
 
-    const updatedPost = {
-      ...selectedPost,
+    const updatedNote = {
+      ...selectedNote,
       text,
       delta,
       date: Date.now(),
     };
 
-    setSelectedPost(updatedPost);
+    setSelectedNote(updatedNote);
 
     debounce(async () => {
-      await updatePostRequest.execute({
-        text: updatedPost.text,
-        date: updatedPost.date,
-        delta: updatedPost.delta,
-        id: updatedPost.id,
+      await updateNoteRequest.execute({
+        text: updatedNote.text,
+        date: updatedNote.date,
+        delta: updatedNote.delta,
+        id: updatedNote.id,
       });
-      const updatedPosts = await fetchPostsRequest.execute();
-      setPosts(updatedPosts);
+
+      const userEmail = sessionStorage.getItem("user_email");
+      if (!userEmail) {
+        console.error("User email not found");
+        return;
+      }
+
+      const updatedNotes = await fetchAllNotes(userEmail);
+      setNotes(updatedNotes);
     }, 1000);
   };
 
-  const isPostAdding = addPostStatus === UseRequestStatus.Pending;
-  const isPostDeleting = deletePostRequest.pending;
+  const isNoteAdding = addNoteStatus === UseRequestStatus.Pending;
+  const isNoteDeleting = deleteNoteRequest.pending;
 
-  const controlsDisabled = isPostAdding || isPostDeleting;
+  const controlsDisabled = isNoteAdding || isNoteDeleting;
 
   return (
-    <div className="form-control flex w-full max-sm:h-[88%] h-[90%]">
+    <div className="flex flex-col flex-1 h-[100%]">
       <EditorMenu
-        selectedPost={selectedPost}
+        selectedNotes={selectedNote}
         handleDelete={handleDelete}
-        createPost={createEmptyPost}
-        posts={posts}
+        createNote={createEmptyNote}
+        notes={notes}
         controlsDisabled={controlsDisabled}
       />
       <ReactQuill
@@ -113,7 +128,7 @@ function Editor({
         }}
         modules={{
           toolbar: [
-            ['bold', 'italic', 'underline', 'strike'],
+            ["bold", "italic", "underline", "strike"],
             [{ list: "ordered" }, { list: "bullet" }],
             ["image", "code-block"],
           ],

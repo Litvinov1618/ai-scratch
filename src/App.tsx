@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import useRequest from "use-request";
+import ReactQuill from "react-quill";
 import { getAuth } from "firebase/auth";
 import Editor from "./Editor";
-import Posts from "./Posts";
+import Notes from "./Notes";
 import Header from "./Header";
 import LoadingScreen from "./LoadingScreen";
 import Drawer from "./Drawer";
 import SignModal from "./SignModal";
-import getAllPosts from "./getAllPosts";
-import addPost from "./addPost";
+import getAllNotes from "./getAllNotes";
+import addNote from "./addNote";
 import registerSwipeListeners from "./registerSwipeListeners";
 import checkMobileDevice from "./checkMobileDevice";
 import app from "./firebase";
-import ReactQuill from "react-quill";
 
-export interface IPost {
+export interface INote {
   id: string;
   text: string;
   delta: ReactQuill.Value;
@@ -22,10 +22,10 @@ export interface IPost {
 }
 
 function App() {
-  const addPostRequest = useRequest(addPost);
-  const fetchPostsRequest = useRequest(getAllPosts);
-  const [posts, setPosts] = useState<IPost[]>([]);
-  const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
+  const addNoteRequest = useRequest(addNote);
+  const fetchNotesRequest = useRequest(getAllNotes);
+  const [notes, setNotes] = useState<INote[]>([]);
+  const [selectedNote, setSelectedNote] = useState<INote | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isUserChecked, setIsUserChecked] = useState(false);
@@ -35,37 +35,46 @@ function App() {
 
   const editorInputRef = useRef<HTMLTextAreaElement>(null);
 
-  const createEmptyPost = async () => {
+  const createEmptyNote = async () => {
     const userEmail = sessionStorage.getItem("user_email");
     if (!userEmail) {
       console.error("User email not found");
       return;
     }
 
-    const newPost = await addPostRequest.execute({
+    const newNote = await addNoteRequest.execute({
       date: Date.now(),
       user_email: userEmail,
     });
 
-    setSelectedPost(newPost);
+    if (!newNote) return;
 
-    const updatedPosts = [newPost, ...posts];
-    setPosts(updatedPosts);
+    setSelectedNote(newNote);
+
+    const updatedNotes = [newNote, ...notes];
+    setNotes(updatedNotes);
 
     editorInputRef.current?.focus();
   };
 
-  const initiatePosts = async () => {
-    const notes = await fetchPostsRequest.execute();
+  const initiateNotes = async () => {
+    const userEmail = sessionStorage.getItem("user_email");
 
-    if (!notes?.length) {
-      await createEmptyPost();
+    if (!userEmail) {
+      console.error("User email not found");
       return;
     }
 
-    setPosts(notes);
+    const notes = await fetchNotesRequest.execute(userEmail);
 
-    setSelectedPost(notes[0]);
+    if (!notes?.length) {
+      await createEmptyNote();
+      return;
+    }
+
+    setNotes(notes);
+
+    setSelectedNote(notes[0]);
   };
 
   const closeDrawer = () => {
@@ -85,7 +94,7 @@ function App() {
       if (!isUserChecked) setIsUserChecked(true);
       if (user?.email) {
         sessionStorage.setItem("user_email", user.email);
-        initiatePosts();
+        initiateNotes();
       }
       setUser(user);
     });
@@ -100,21 +109,21 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!fetchPostsRequest.completed || posts.length) return;
-    createEmptyPost();
+    if (!fetchNotesRequest.completed || notes.length) return;
+    createEmptyNote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchPostsRequest.completed, posts]);
+  }, [fetchNotesRequest.completed, notes]);
 
   return (
     <div className="relative">
       {isUserChecked && !user && <SignModal auth={auth} />}
-      {(!fetchPostsRequest.completed || !isUserChecked) && <LoadingScreen />}
+      {(!fetchNotesRequest.completed && !isUserChecked) && <LoadingScreen />}
       <Drawer
         content={
-          <Posts
-            selectedPost={selectedPost}
-            posts={posts}
-            setSelectedPost={setSelectedPost}
+          <Notes
+            selectedNote={selectedNote}
+            notes={notes}
+            setSelectedNote={setSelectedNote}
             closeDrawer={closeDrawer}
             logout={logout}
           />
@@ -124,13 +133,14 @@ function App() {
       >
         <Header isMobileDevice={isMobileDevice} />
         <Editor
-          posts={posts}
-          setPosts={setPosts}
-          selectedPost={selectedPost}
-          setSelectedPost={setSelectedPost}
+          notes={notes}
+          setNotes={setNotes}
+          selectedNote={selectedNote}
+          setSelectedNote={setSelectedNote}
           editorInputRef={editorInputRef}
-          createEmptyPost={createEmptyPost}
-          addPostStatus={addPostRequest.status}
+          createEmptyNote={createEmptyNote}
+          addNoteStatus={addNoteRequest.status}
+          fetchAllNotes={fetchNotesRequest.execute}
         />
       </Drawer>
     </div>

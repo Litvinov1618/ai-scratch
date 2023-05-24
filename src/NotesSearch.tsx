@@ -6,7 +6,7 @@ interface Props {
   clearSearchResults: () => void;
 }
 
-function PostsSearch({ onSearch, isSearching, clearSearchResults }: Props) {
+function NotesSearch({ onSearch, isSearching, clearSearchResults }: Props) {
   const [searchValue, setSearchValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -54,4 +54,4 @@ function PostsSearch({ onSearch, isSearching, clearSearchResults }: Props) {
   );
 }
 
-export default PostsSearch;
+export default NotesSearch;
