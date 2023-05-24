@@ -30,6 +30,7 @@ function App() {
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isUserChecked, setIsUserChecked] = useState(false);
   const [blurEditor, setBlurEditor] = useState(false);
+  const [initialNotesLoaded, setInitialNotesLoaded] = useState(false);
 
   const auth = getAuth(app);
   const [user, setUser] = useState(auth.currentUser);
@@ -71,6 +72,8 @@ function App() {
       return;
     }
 
+    setInitialNotesLoaded(true);
+
     setNotes(notes);
 
     setSelectedNote(notes[0]);
@@ -101,6 +104,7 @@ function App() {
       if (!isUserChecked) setIsUserChecked(true);
       if (user?.email) {
         sessionStorage.setItem("user_email", user.email);
+        setInitialNotesLoaded(false);
         initiateNotes();
       }
       setUser(user);
@@ -115,16 +119,10 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (!fetchNotesRequest.completed || notes.length) return;
-    createEmptyNote();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchNotesRequest.completed, notes]);
-
   return (
     <div className="relative">
       {isUserChecked && !user && <SignModal auth={auth} />}
-      {!fetchNotesRequest.completed && !isUserChecked && <LoadingScreen />}
+      {(!initialNotesLoaded || !isUserChecked) && <LoadingScreen />}
       <Drawer
         content={
           <Notes
