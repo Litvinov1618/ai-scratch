@@ -15,7 +15,6 @@ interface Props {
   setNotes: React.Dispatch<React.SetStateAction<INote[]>>;
   selectedNote: INote | null;
   setSelectedNote: React.Dispatch<React.SetStateAction<INote | null>>;
-  quillEditorRef: ReactQuill | null;
   setQuillEditorRef: React.Dispatch<React.SetStateAction<ReactQuill | null>>;
   createEmptyNote: () => void;
   addNoteStatus: UseRequestStatus;
@@ -27,7 +26,6 @@ function Editor({
   setNotes,
   selectedNote,
   setSelectedNote,
-  quillEditorRef,
   setQuillEditorRef,
   createEmptyNote,
   addNoteStatus,

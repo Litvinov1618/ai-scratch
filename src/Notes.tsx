@@ -87,8 +87,8 @@ function Notes({
   }, [notes, setVisibleNotes]);
 
   return (
-    <div className="max-lg:p-3 p-4 w-full relative">
-      <div className="form-control hover:bg-transparent pb-1">
+    <div className="w-[100%] h-[100%] flex flex-col fixed flex-1 overflow-hidden">
+      <div className="form-control hover:bg-transparent p-2">
         <NotesSearch
           onSearch={onSearch}
           isSearching={isSearching}
@@ -96,7 +96,7 @@ function Notes({
         />
         <AIResponseBubble aiResponse={aiResponse} />
       </div>
-      <div className="overflow-auto h-[87%] no-scrollbar">
+      <div className="h-[100%] p-2 pt-0 overflow-y-auto flex-1 no-scrollbar">
         {visibleNotes.length ? (
           <ul className="menu bg-base-100">
             {visibleNotes.map((note) => (
@@ -111,7 +111,7 @@ function Notes({
           </ul>
         ) : null}
       </div>
-      <div className="absolute bottom-0 left-0 right-0 flex justify-center p-2 bg-base-100 border-t border-gray-950">
+      <div className="flex justify-center p-2 bg-base-100 border-t border-gray-950 border-opacity-10">
         <button className="btn btn-outline" onClick={logout}>
           Logout
         </button>

@@ -144,7 +144,6 @@ function App() {
           setNotes={setNotes}
           selectedNote={selectedNote}
           setSelectedNote={setSelectedNote}
-          quillEditorRef={quillEditorRef}
           setQuillEditorRef={setQuillEditorRef}
           createEmptyNote={createEmptyNote}
           addNoteStatus={addNoteRequest.status}
