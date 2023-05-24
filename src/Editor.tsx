@@ -15,7 +15,8 @@ interface Props {
   setNotes: React.Dispatch<React.SetStateAction<INote[]>>;
   selectedNote: INote | null;
   setSelectedNote: React.Dispatch<React.SetStateAction<INote | null>>;
-  editorInputRef: React.RefObject<HTMLTextAreaElement>;
+  quillEditorRef: ReactQuill | null;
+  setQuillEditorRef: React.Dispatch<React.SetStateAction<ReactQuill | null>>;
   createEmptyNote: () => void;
   addNoteStatus: UseRequestStatus;
   fetchAllNotes: (userEmail: string) => Promise<INote[]>;
@@ -26,7 +27,8 @@ function Editor({
   setNotes,
   selectedNote,
   setSelectedNote,
-  editorInputRef,
+  quillEditorRef,
+  setQuillEditorRef,
   createEmptyNote,
   addNoteStatus,
   fetchAllNotes,
@@ -46,11 +48,9 @@ function Editor({
   const selectFirstNote = (notes: INote[]) => {
     if (!notes.length) {
       setSelectedNote(null);
-      editorInputRef.current?.focus();
       return;
     }
     setSelectedNote(notes[0]);
-    editorInputRef.current?.focus();
   };
 
   const handleDelete = async (id: string) => {
@@ -118,6 +118,9 @@ function Editor({
         controlsDisabled={controlsDisabled}
       />
       <ReactQuill
+        ref={(ref) => {
+          setQuillEditorRef(ref);
+        }}
         theme="snow"
         value={value}
         onChange={(_content, _delta, _source, editor) => {

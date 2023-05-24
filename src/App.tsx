@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import useRequest from "use-request";
 import ReactQuill from "react-quill";
 import { getAuth } from "firebase/auth";
@@ -29,11 +29,12 @@ function App() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isUserChecked, setIsUserChecked] = useState(false);
+  const [blurEditor, setBlurEditor] = useState(false);
 
   const auth = getAuth(app);
   const [user, setUser] = useState(auth.currentUser);
 
-  const editorInputRef = useRef<HTMLTextAreaElement>(null);
+  const [quillEditorRef, setQuillEditorRef] = useState<ReactQuill | null>(null);
 
   const createEmptyNote = async () => {
     const userEmail = sessionStorage.getItem("user_email");
@@ -53,8 +54,6 @@ function App() {
 
     const updatedNotes = [newNote, ...notes];
     setNotes(updatedNotes);
-
-    editorInputRef.current?.focus();
   };
 
   const initiateNotes = async () => {
@@ -83,11 +82,19 @@ function App() {
 
   const openDrawer = () => {
     setIsDrawerOpen(true);
+    setBlurEditor(true);
   };
 
   const logout = () => {
     auth.signOut();
   };
+
+  useEffect(() => {
+    if (!blurEditor) return;
+
+    quillEditorRef?.blur();
+    setBlurEditor(false);
+  }, [blurEditor, quillEditorRef]);
 
   useEffect(() => {
     return auth.onAuthStateChanged((user) => {
@@ -117,7 +124,7 @@ function App() {
   return (
     <div className="relative">
       {isUserChecked && !user && <SignModal auth={auth} />}
-      {(!fetchNotesRequest.completed && !isUserChecked) && <LoadingScreen />}
+      {!fetchNotesRequest.completed && !isUserChecked && <LoadingScreen />}
       <Drawer
         content={
           <Notes
@@ -137,7 +144,8 @@ function App() {
           setNotes={setNotes}
           selectedNote={selectedNote}
           setSelectedNote={setSelectedNote}
-          editorInputRef={editorInputRef}
+          quillEditorRef={quillEditorRef}
+          setQuillEditorRef={setQuillEditorRef}
           createEmptyNote={createEmptyNote}
           addNoteStatus={addNoteRequest.status}
           fetchAllNotes={fetchNotesRequest.execute}
