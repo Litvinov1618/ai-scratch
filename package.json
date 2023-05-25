@@ -20,7 +20,7 @@
     "use-request": "^0.1.2",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "https://litvinov1618.github.io/ai-scratch",
+  "homepage": "https://ai-scratch.vercel.app/",
   "scripts": {
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
