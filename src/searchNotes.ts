@@ -1,5 +1,4 @@
 import { INote } from "./App";
-import { SERVER_HOST } from "./constants";
 
 interface ISearchNotesResponse {
     notes: INote[];
@@ -9,7 +8,7 @@ interface ISearchNotesResponse {
 
 const searchNotes = async (searchValue: string, userEmail: string): Promise<ISearchNotesResponse> => {
     const res = await fetch(
-        `${SERVER_HOST}/notes/search?search_value=${searchValue}&user_email=${userEmail}`,
+        `${process.env.REACT_APP_SERVER_HOST}/notes/search?search_value=${searchValue}&user_email=${userEmail}`,
         {
             method: "GET",
             headers: {

@@ -1,8 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { FIREBASE_API_KEY } from "./constants";
 
 const firebaseConfig = {
-  apiKey: FIREBASE_API_KEY,
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: "ai-scratch-613ce.firebaseapp.com",
   projectId: "ai-scratch-613ce",
   storageBucket: "ai-scratch-613ce.appspot.com",
