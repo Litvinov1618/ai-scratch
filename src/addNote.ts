@@ -1,12 +1,11 @@
 import { INote } from "./App";
-import { SERVER_HOST } from "./constants";
 
 interface INewNote extends Omit<INote, 'id' | 'delta' | 'text'> {
     user_email: string;
 }
 
 const addNote = async (note: INewNote): Promise<INote | undefined> => {
-    const res = await fetch(`${SERVER_HOST}/notes`, {
+    const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/notes`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

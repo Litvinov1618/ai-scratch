@@ -1,8 +1,7 @@
 import { INote } from "./App";
-import { SERVER_HOST } from "./constants";
 
 const updateNote = async (note: INote): Promise<Response> => {
-    const res = await fetch(`${SERVER_HOST}/notes/${note.id}`, {
+    const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/notes/${note.id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
