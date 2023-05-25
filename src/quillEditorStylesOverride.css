@@ -11,8 +11,32 @@
     flex-direction: column;
 }
 
+.ql-snow .ql-tooltip {
+    border-color: #413f00;
+    background-color: #413f00;
+    color: #fe0;
+    box-shadow: 0px 0px 5px #413f00d6;
+}
+
+.ql-snow .ql-tooltip a {
+    color: #ff7598;
+}
+
+.ql-snow .ql-tooltip a.ql-action::after {
+    border-color: #ff759854;
+}
+
 .ql-editor {
     flex: 1;
+}
+
+.ql-editor a {
+    color: #ff7598;
+}
+
+.ql-snow .ql-tooltip input[type=text] {
+    background-color: #413f00;
+    border-color: #6e6b00;
 }
 
 .ql-toolbar .ql-stroke {

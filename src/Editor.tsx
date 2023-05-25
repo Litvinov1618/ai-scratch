@@ -33,6 +33,7 @@ function Editor({
 }: Props) {
   const deleteNoteRequest = useRequest(deleteNote);
   const updateNoteRequest = useRequest(updateNote);
+  const [previousSelectedNoteId, setPreviousSelectedNoteId] = useState("");
 
   const [value, setValue] = useState<ReactQuill.Value | undefined>();
 
@@ -70,6 +71,11 @@ function Editor({
     setValue(delta);
 
     if (!selectedNote) {
+      return;
+    }
+
+    if (selectedNote.id !== previousSelectedNoteId) {
+      setPreviousSelectedNoteId(selectedNote.id);
       return;
     }
 
@@ -131,7 +137,7 @@ function Editor({
           toolbar: [
             ["bold", "italic", "underline", "strike"],
             [{ list: "ordered" }, { list: "bullet" }],
-            ["image", "code-block"],
+            ["image", "code-block", "link"],
           ],
         }}
         placeholder="What's on your mind?"
