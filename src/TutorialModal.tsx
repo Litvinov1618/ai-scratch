@@ -42,7 +42,25 @@ interface Props {
 function TutorialModal({ setIsNewUser }: Props) {
   const [step, setStep] = useState(STEPS[0]);
   const [isModalShown, setIsModalShown] = useState(true);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
   const modalRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const loadedDataEventListener = () => setIsVideoLoading(false);
+    const loadStartEventListener = () => setIsVideoLoading(true);
+
+    video.addEventListener("loadeddata", loadedDataEventListener);
+    video.addEventListener("loadstart", loadStartEventListener);
+
+    return () => {
+      video?.removeEventListener("loadeddata", loadedDataEventListener);
+      video?.removeEventListener("loadstart", loadStartEventListener);
+    };
+  }, [videoRef]);
 
   const setNextStep = () => {
     const nextStepIndex = STEPS.indexOf(step) + 1;
@@ -109,16 +127,16 @@ function TutorialModal({ setIsNewUser }: Props) {
           <p className="py-3 max-md:py-2 max-md:text-sm">
             {STEPS[stepIndex]?.description}
           </p>
-          {step.video && (
-            <video
-              className="w-full h-full"
-              autoPlay
-              loop
-              muted
-              playsInline
-              src={step.video}
-            />
-          )}
+          {isVideoLoading && <button className="btn btn-circle btn-ghost loading btn-lg w-full" />}
+          <video
+            className="w-full h-full"
+            autoPlay
+            loop
+            muted
+            playsInline
+            src={step.video}
+            ref={videoRef}
+          />
           <div className="flex justify-center pt-3 max-md:pt-2">
             <button className="btn btn-primary" onClick={setNextStep}>
               {stepIndex === STEPS.length - 1 ? "Finish" : "Next"}
