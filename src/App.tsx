@@ -13,6 +13,7 @@ import addNote from "./addNote";
 import registerSwipeListeners from "./registerSwipeListeners";
 import checkMobileDevice from "./checkMobileDevice";
 import app from "./firebase";
+import TutorialModal from "./TutorialModal";
 
 export interface INote {
   id: string;
@@ -31,6 +32,7 @@ function App() {
   const [isUserChecked, setIsUserChecked] = useState(false);
   const [blurEditor, setBlurEditor] = useState(false);
   const [initialNotesLoaded, setInitialNotesLoaded] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   const auth = getAuth(app);
   const [user, setUser] = useState(auth.currentUser);
@@ -69,6 +71,7 @@ function App() {
 
     if (!notes?.length) {
       await createEmptyNote();
+      setInitialNotesLoaded(true);
       return;
     }
 
@@ -121,8 +124,9 @@ function App() {
 
   return (
     <div className="relative">
-      {isUserChecked && !user && <SignModal auth={auth} />}
+      {isUserChecked && !user && <SignModal auth={auth} setIsNewUser={setIsNewUser} />}
       {(!initialNotesLoaded || !isUserChecked) && <LoadingScreen />}
+      {isNewUser && <TutorialModal setIsNewUser={setIsNewUser} />}
       <Drawer
         content={
           <Notes

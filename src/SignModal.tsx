@@ -13,9 +13,10 @@ enum SignModalType {
 
 interface Props {
   auth: Auth;
+  setIsNewUser: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function SignModal({ auth }: Props) {
+function SignModal({ auth, setIsNewUser }: Props) {
   const [signModalType, setSignModalType] = useState(SignModalType.SignIn);
   const [email, setEmail] = useState("");
   const [isEmailSent, setIsEmailSent] = useState(false);
@@ -56,9 +57,13 @@ function SignModal({ auth }: Props) {
       return;
     }
 
-    createUserWithEmailAndPassword(auth, email, newPassword).catch((error) => {
-      setErrorMessage(error.message);
-    });
+    createUserWithEmailAndPassword(auth, email, newPassword)
+      .then(() => {
+        setIsNewUser(true);
+      })
+      .catch((error) => {
+        setErrorMessage(error.message);
+      });
   };
 
   const onSubmit = () => {
@@ -89,6 +94,12 @@ function SignModal({ auth }: Props) {
       .catch((error) => {
         setErrorMessage(error.message);
       });
+  };
+
+  const changeModalType = (type: SignModalType) => {
+    clearMessages();
+    setEmail("");
+    setSignModalType(type);
   };
 
   return (
@@ -218,7 +229,7 @@ function SignModal({ auth }: Props) {
                 className={`${
                   signModalType === SignModalType.SignIn ? "btn-active" : ""
                 } btn btn-outline w-full flex justify-center`}
-                onClick={() => setSignModalType(SignModalType.SignIn)}
+                onClick={() => changeModalType(SignModalType.SignIn)}
               >
                 Sign in
               </button>
@@ -228,7 +239,7 @@ function SignModal({ auth }: Props) {
                 className={`${
                   signModalType === SignModalType.SignUp ? "btn-active" : ""
                 } btn btn-outline w-full flex justify-center`}
-                onClick={() => setSignModalType(SignModalType.SignUp)}
+                onClick={() => changeModalType(SignModalType.SignUp)}
               >
                 Sign up
               </button>
