@@ -5,6 +5,7 @@ import {
   sendPasswordResetEmail,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
+import ShowPasswordButton from "./ShowPasswordButton";
 
 enum SignModalType {
   SignIn,
@@ -24,6 +25,7 @@ function SignModal({ auth, setIsNewUser }: Props) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isPasswordShown, setIsPasswordShown] = useState(false);
 
   const clearMessages = () => {
     setErrorMessage("");
@@ -154,9 +156,9 @@ function SignModal({ auth, setIsNewUser }: Props) {
               </div>
               {signModalType === SignModalType.SignIn && (
                 <div className="form-control">
-                  <label className="input-group">
+                  <label className="input-group relative">
                     <input
-                      type="password"
+                      type={isPasswordShown ? "text" : "password"}
                       id="current-password"
                       name="current-password"
                       autoComplete="current-password"
@@ -168,15 +170,19 @@ function SignModal({ auth, setIsNewUser }: Props) {
                         clearMessages();
                       }}
                     />
+                    <ShowPasswordButton
+                      isPasswordShown={isPasswordShown}
+                      setIsPasswordShown={setIsPasswordShown}
+                    />
                   </label>
                 </div>
               )}
               {signModalType === SignModalType.SignUp && (
                 <>
                   <div className="form-control">
-                    <label className="input-group">
+                    <label className="input-group relative">
                       <input
-                        type="password"
+                        type={isPasswordShown ? "text" : "password"}
                         id="new-password"
                         name="new-password"
                         autoComplete="new-password"
@@ -188,12 +194,16 @@ function SignModal({ auth, setIsNewUser }: Props) {
                           clearMessages();
                         }}
                       />
+                      <ShowPasswordButton
+                        isPasswordShown={isPasswordShown}
+                        setIsPasswordShown={setIsPasswordShown}
+                      />
                     </label>
                   </div>
                   <div className="form-control">
                     <label className="input-group">
                       <input
-                        type="password"
+                        type={isPasswordShown ? "text" : "password"}
                         id="confirm-password"
                         name="confirm-password"
                         autoComplete="new-password"
