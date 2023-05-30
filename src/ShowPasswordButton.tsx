@@ -20,6 +20,7 @@ function ShowPasswordButton({ isPasswordShown, setIsPasswordShown }: Props) {
           viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
+          className="absolute top-0 right-0 m-1"
         >
           <path
             strokeLinecap="round"
@@ -40,6 +41,7 @@ function ShowPasswordButton({ isPasswordShown, setIsPasswordShown }: Props) {
           viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
+          className="absolute top-0 right-0 m-1"
         >
           <path
             strokeLinecap="round"
