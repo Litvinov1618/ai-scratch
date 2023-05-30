@@ -129,7 +129,7 @@ function TutorialModal({ setIsNewUser }: Props) {
           </p>
           {isVideoLoading && <button className="btn btn-circle btn-ghost loading btn-lg w-full" />}
           <video
-            className="w-full h-full"
+            className={`w-full h-full ${isVideoLoading ? "hidden" : ""}`}
             autoPlay
             loop
             muted
