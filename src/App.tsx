@@ -8,12 +8,12 @@ import Header from "./Header";
 import LoadingScreen from "./LoadingScreen";
 import Drawer from "./Drawer";
 import SignModal from "./SignModal";
+import TutorialModal from "./TutorialModal";
 import getAllNotes from "./getAllNotes";
 import addNote from "./addNote";
 import registerSwipeListeners from "./registerSwipeListeners";
 import checkMobileDevice from "./checkMobileDevice";
 import app from "./firebase";
-import TutorialModal from "./TutorialModal";
 
 export interface INote {
   id: string;
@@ -119,12 +119,13 @@ function App() {
     setIsMobileDevice(checkMobileDevice());
 
     return registerSwipeListeners(closeDrawer, openDrawer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="relative">
-      {isUserChecked && !user && <SignModal auth={auth} setIsNewUser={setIsNewUser} />}
+      {isUserChecked && !user && (
+        <SignModal auth={auth} setIsNewUser={setIsNewUser} />
+      )}
       {(!initialNotesLoaded || !isUserChecked) && <LoadingScreen />}
       {isNewUser && <TutorialModal setIsNewUser={setIsNewUser} />}
       <Drawer
