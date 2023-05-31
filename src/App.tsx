@@ -123,7 +123,9 @@ function App() {
 
   return (
     <div className="relative">
-      {isUserChecked && !user && <SignModal auth={auth} setIsNewUser={setIsNewUser} />}
+      {isUserChecked && !user && (
+        <SignModal auth={auth} setIsNewUser={setIsNewUser} />
+      )}
       {(!initialNotesLoaded || !isUserChecked) && <LoadingScreen />}
       {isNewUser && <TutorialModal setIsNewUser={setIsNewUser} />}
       <Drawer
