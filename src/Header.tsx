@@ -6,7 +6,7 @@ interface Props {
 
 function Header({ isMobileDevice }: Props) {
   return (
-    <div className="text-5xl text-center mb-7 relative">
+    <div className="text-5xl text-center mb-6 relative">
       AI Scratch
       <div
         className={`absolute top-0 bottom-0 left-0 flex align-middle lg:hidden ${
