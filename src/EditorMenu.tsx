@@ -1,5 +1,5 @@
 import { INote } from "./App";
-import formatDate from "./formatDate";
+import { showFullDate } from "./formatDate";
 
 interface Props {
   selectedNotes: INote | null;
@@ -9,14 +9,26 @@ interface Props {
   controlsDisabled: boolean;
 }
 
-function EditorMenu({ selectedNotes, handleDelete, createNote, notes, controlsDisabled }: Props) {
-  const createButtonDisabled = controlsDisabled || (!!notes.length && !selectedNotes?.text);
-  const deleteButtonDisabled = controlsDisabled || notes?.length === 1 || !selectedNotes;
+function EditorMenu({
+  selectedNotes,
+  handleDelete,
+  createNote,
+  notes,
+  controlsDisabled,
+}: Props) {
+  const createButtonDisabled =
+    controlsDisabled || (!!notes.length && !selectedNotes?.text);
+  const deleteButtonDisabled =
+    controlsDisabled || notes?.length === 1 || !selectedNotes;
 
   return (
     <ul className="menu menu-horizontal bg-base-100 rounded-box w-full justify-between py-3">
-      <li className={createButtonDisabled ? 'disabled' : ''}>
-        <button onClick={createNote} className="px-1" disabled={createButtonDisabled}>
+      <li className={createButtonDisabled ? "disabled" : ""}>
+        <button
+          onClick={createNote}
+          className="px-1"
+          disabled={createButtonDisabled}
+        >
           <svg
             className="h-5 w-5"
             fill="none"
@@ -38,12 +50,12 @@ function EditorMenu({ selectedNotes, handleDelete, createNote, notes, controlsDi
         <div className="flex justify-center hover:bg-inherit hover:cursor-default">
           <span className="badge">
             {selectedNotes?.date
-              ? formatDate(+selectedNotes.date).toString()
-              : formatDate(Date.now())}
+              ? showFullDate(+selectedNotes.date).toString()
+              : showFullDate(Date.now())}
           </span>
         </div>
       </li>
-      <li className={deleteButtonDisabled ? 'disabled' : ''}>
+      <li className={deleteButtonDisabled ? "disabled" : ""}>
         <button
           onClick={() => {
             if (!selectedNotes) return;
