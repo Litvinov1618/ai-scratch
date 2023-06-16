@@ -21,6 +21,7 @@ const initiateSettings = async (
 
     if (!userSettings) {
         await addUserSettingsRequest.execute(userEmail, DEFAULT_SETTINGS);
+        setSettings(DEFAULT_SETTINGS);
         return;
     }
 
