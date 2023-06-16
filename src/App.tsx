@@ -1,19 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useRequest from "use-request";
 import ReactQuill from "react-quill";
 import { getAuth } from "firebase/auth";
-import Editor from "./Editor";
-import Notes from "./Notes";
-import Header from "./Header";
 import LoadingScreen from "./LoadingScreen";
-import Drawer from "./Drawer";
-import SignModal from "./SignModal";
 import TutorialModal from "./TutorialModal";
-import getAllNotes from "./getAllNotes";
-import addNote from "./addNote";
+import SettingsModal from "./SettingsModal";
+import SignModal from "./SignModal";
+import Header from "./Header";
+import Editor from "./Editor";
+import Drawer from "./Drawer";
+import Notes from "./Notes";
 import registerSwipeListeners from "./registerSwipeListeners";
 import checkMobileDevice from "./checkMobileDevice";
+import addUserSettings from "./addUserSettings";
+import getUserSettings from "./getUserSettings";
+import getAllNotes from "./getAllNotes";
+import addNote from "./addNote";
 import app from "./firebase";
+import initiateSettings from "./initiateSettings";
+import initiateNotes from "./initiateNotes";
 
 export interface INote {
   id: string;
@@ -22,9 +27,18 @@ export interface INote {
   date: number;
 }
 
+export interface IUserSettings {
+  notesSimilarityThreshold: number;
+  aiResponseTemperature: number;
+  showAiResponse: boolean;
+}
+
 function App() {
   const addNoteRequest = useRequest(addNote);
   const fetchNotesRequest = useRequest(getAllNotes);
+  const fetchUserSettingsRequest = useRequest(getUserSettings);
+  const addUserSettingsRequest = useRequest(addUserSettings);
+
   const [notes, setNotes] = useState<INote[]>([]);
   const [selectedNote, setSelectedNote] = useState<INote | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -33,11 +47,13 @@ function App() {
   const [blurEditor, setBlurEditor] = useState(false);
   const [initialNotesLoaded, setInitialNotesLoaded] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
+  const [settings, setSettings] = useState<IUserSettings | null>(null);
 
   const auth = getAuth(app);
   const [user, setUser] = useState(auth.currentUser);
 
   const [quillEditorRef, setQuillEditorRef] = useState<ReactQuill | null>(null);
+  const settingsModalRef = useRef<HTMLDialogElement>(null);
 
   const createEmptyNote = async () => {
     const userEmail = sessionStorage.getItem("user_email");
@@ -59,29 +75,6 @@ function App() {
     setNotes(updatedNotes);
   };
 
-  const initiateNotes = async () => {
-    const userEmail = sessionStorage.getItem("user_email");
-
-    if (!userEmail) {
-      console.error("User email not found");
-      return;
-    }
-
-    const notes = await fetchNotesRequest.execute(userEmail);
-
-    if (!notes?.length) {
-      await createEmptyNote();
-      setInitialNotesLoaded(true);
-      return;
-    }
-
-    setInitialNotesLoaded(true);
-
-    setNotes(notes);
-
-    setSelectedNote(notes[0]);
-  };
-
   const closeDrawer = () => {
     setIsDrawerOpen(false);
   };
@@ -93,6 +86,10 @@ function App() {
 
   const logout = () => {
     auth.signOut();
+  };
+
+  const openSettings = () => {
+    settingsModalRef.current?.showModal();
   };
 
   useEffect(() => {
@@ -108,7 +105,18 @@ function App() {
       if (user?.email) {
         sessionStorage.setItem("user_email", user.email);
         setInitialNotesLoaded(false);
-        initiateNotes();
+        initiateNotes(
+          fetchNotesRequest,
+          createEmptyNote,
+          setNotes,
+          setSelectedNote,
+          setInitialNotesLoaded
+        );
+        initiateSettings(
+          fetchUserSettingsRequest,
+          addUserSettingsRequest,
+          setSettings
+        );
       }
       setUser(user);
     });
@@ -123,6 +131,13 @@ function App() {
 
   return (
     <div className="relative">
+      {settings && (
+        <SettingsModal
+          settingsModalRef={settingsModalRef}
+          settings={settings}
+          setSettings={setSettings}
+        />
+      )}
       {isUserChecked && !user && (
         <SignModal auth={auth} setIsNewUser={setIsNewUser} />
       )}
@@ -136,6 +151,8 @@ function App() {
             setSelectedNote={setSelectedNote}
             closeDrawer={closeDrawer}
             logout={logout}
+            openSettings={openSettings}
+            settings={settings}
           />
         }
         isDrawerOpen={isDrawerOpen}

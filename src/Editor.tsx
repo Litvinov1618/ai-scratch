@@ -34,6 +34,7 @@ function Editor({
   const deleteNoteRequest = useRequest(deleteNote);
   const updateNoteRequest = useRequest(updateNote);
   const [previousSelectedNoteId, setPreviousSelectedNoteId] = useState("");
+  const [showSavedIndicator, setShowSavedIndicator] = useState(false);
 
   const [value, setValue] = useState<ReactQuill.Value | undefined>();
 
@@ -76,6 +77,7 @@ function Editor({
 
     if (selectedNote.id !== previousSelectedNoteId) {
       setPreviousSelectedNoteId(selectedNote.id);
+      setShowSavedIndicator(false);
       return;
     }
 
@@ -87,6 +89,7 @@ function Editor({
     };
 
     setSelectedNote(updatedNote);
+    setShowSavedIndicator(false);
 
     debounce(async () => {
       await updateNoteRequest.execute({
@@ -103,9 +106,20 @@ function Editor({
       }
 
       const updatedNotes = await fetchAllNotes(userEmail);
+      setShowSavedIndicator(true);
       setNotes(updatedNotes);
     }, 1000);
   };
+
+  useEffect(() => {
+    if (!showSavedIndicator) return;
+
+    const timeout = setTimeout(() => {
+      setShowSavedIndicator(false);
+    }, 8000);
+
+    return () => clearTimeout(timeout);
+  }, [showSavedIndicator]);
 
   const isNoteAdding = addNoteStatus === UseRequestStatus.Pending;
   const isNoteDeleting = deleteNoteRequest.pending;
@@ -120,6 +134,7 @@ function Editor({
         createNote={createEmptyNote}
         notes={notes}
         controlsDisabled={controlsDisabled}
+        showSavedIndicator={showSavedIndicator}
       />
       <ReactQuill
         ref={(ref) => {

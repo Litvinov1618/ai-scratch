@@ -1,6 +1,6 @@
 import { INote } from "./App";
 
-interface INewNote extends Omit<INote, 'id' | 'delta' | 'text'> {
+export interface INewNote extends Omit<INote, 'id' | 'delta' | 'text'> {
     user_email: string;
 }
 

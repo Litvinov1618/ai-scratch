@@ -30,3 +30,7 @@ select:-webkit-autofill:focus {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+dialog::backdrop {
+  backdrop-filter: blur(4px);
+}
