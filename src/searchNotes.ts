@@ -6,9 +6,9 @@ interface ISearchNotesResponse {
     error: boolean;
 }
 
-const searchNotes = async (searchValue: string, userEmail: string): Promise<ISearchNotesResponse> => {
+const searchNotes = async (searchValue: string, userEmail: string, notesSimilarityThreshold?: number, aiResponseTemperature?: number): Promise<ISearchNotesResponse> => {
     const res = await fetch(
-        `${process.env.REACT_APP_SERVER_HOST}/notes/search?search_value=${searchValue}&user_email=${userEmail}`,
+        `${process.env.REACT_APP_SERVER_HOST}/notes/search?search_value=${searchValue}&user_email=${userEmail}&ai_response_temperature=${aiResponseTemperature}&notes_similarity_threshold=${notesSimilarityThreshold}`,
         {
             method: "GET",
             headers: {

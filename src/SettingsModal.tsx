@@ -1,0 +1,153 @@
+import { useState } from "react";
+import useRequest from "use-request";
+import updateUserSettings from "./updateUserSettings";
+import { IUserSettings } from "./App";
+
+interface SettingsModalProps {
+  settingsModalRef: React.RefObject<HTMLDialogElement>;
+  settings: IUserSettings;
+  setSettings: React.Dispatch<React.SetStateAction<IUserSettings | null>>;
+}
+
+function SettingsModal({
+  settingsModalRef,
+  settings,
+  setSettings,
+}: SettingsModalProps) {
+  const [similarityRange, setSimilarityRange] = useState(
+    settings.notesSimilarityThreshold
+  );
+  const [temperatureRange, setTemperatureRange] = useState(
+    settings.aiResponseTemperature
+  );
+  const [showAiResponse, setShowAiResponse] = useState(settings.showAiResponse);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const updateSettingsRequest = useRequest(updateUserSettings);
+
+  const saveSettings = async () => {
+    const userEmail = sessionStorage.getItem("user_email");
+
+    if (!userEmail) {
+      console.error("User email not found");
+      return;
+    }
+
+    const settings = {
+      notesSimilarityThreshold: +similarityRange,
+      aiResponseTemperature: +temperatureRange,
+      showAiResponse,
+    };
+
+    setIsLoading(true);
+    const res = await updateSettingsRequest.execute(userEmail, settings);
+    setIsLoading(false);
+
+    if (!res) {
+      console.error("No Settings found to update");
+      setError("No Settings found to update");
+      return;
+    }
+
+    setSettings(settings);
+    settingsModalRef.current?.close();
+  };
+
+  return (
+    <dialog ref={settingsModalRef} className="p-0 bg-transparent">
+      <div className="w-fit max-w-md bg-base-100 p-6">
+        <form>
+          <h3 className="font-bold text-lg">Settings</h3>
+          {error && (
+            <div className="alert alert-error">
+              <div className="flex-1">
+                <label>{error}</label>
+              </div>
+            </div>
+          )}
+          <div className="py-4 flex flex-col gap-3">
+            <div className="form-control w-full">
+              <div className="collapse collapse-plus mb-[-7px]">
+                <input type="checkbox" className="peer" />
+                <div className="collapse-title max-sm:text-sm text-md tracking-tight pl-1">
+                  Similarity Threshold - {similarityRange}
+                </div>
+                <div className="collapse-content pl-1">
+                  <p className="text-sm">
+                    The Similarity Threshold for notes search determines how
+                    closely a note needs to match your search query to be
+                    considered a match. Higher thresholds find more precise
+                    matches, but may result in fewer results. Lower thresholds
+                    include broader matches, potentially giving more results,
+                    but they may be less relevant.
+                  </p>
+                </div>
+              </div>
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.05"
+                value={similarityRange}
+                onChange={(e) => setSimilarityRange(+e.target.value)}
+                className="range range-xs range-primary z-10"
+              />
+            </div>
+            <div className="form-control w-full">
+              <div className="collapse collapse-plus mb-[-7px]">
+                <input type="checkbox" className="peer" />
+                <div className="collapse-title max-sm:text-sm text-md tracking-tight pl-1">
+                  AI Response Temperature - {temperatureRange}
+                </div>
+                <div className="collapse-content pl-1">
+                  <p className="text-sm">
+                    AI Suggestion Temperature controls the level of randomness
+                    in suggested content. Lower values produce focused
+                    suggestions, while higher values result in more creative and
+                    diverse outputs. Experiment to find the right balance for
+                    your needs.
+                  </p>
+                </div>
+              </div>
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.05"
+                value={temperatureRange}
+                onChange={(e) => setTemperatureRange(+e.target.value)}
+                className="range range-xs range-primary z-10"
+              />
+            </div>
+            <div className="form-control w-full">
+              <label className="label cursor-pointer">
+                <p className="max-sm:text-sm text-md">Show AI Response</p>
+                <input
+                  type="checkbox"
+                  className="toggle toggle-primary"
+                  checked={showAiResponse}
+                  onChange={(e) => {
+                    setShowAiResponse(e.target.checked);
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+          <div className="modal-action">
+            <button
+              className="btn"
+              formMethod="dialog"
+              onClick={saveSettings}
+              disabled={isLoading}
+            >
+              Apply
+            </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+  );
+}
+
+export default SettingsModal;

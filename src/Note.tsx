@@ -22,7 +22,8 @@ const Note = ({ note, isActive, selectNote, selectedNote }: Props) => {
         subtitle: "",
       };
     }
-    const firstDeltaOpsInsert = note.delta.ops[0].insert;
+    const firstDeltaOpsInsert = note.delta.ops[0]?.insert;
+    const secondDeltaOpsInsert = note.delta.ops[1]?.insert;
     if (typeof firstDeltaOpsInsert !== "string") {
       return {
         title: note.text,
@@ -34,7 +35,7 @@ const Note = ({ note, isActive, selectNote, selectedNote }: Props) => {
     if (splitted.length === 1) {
       return {
         title: firstDeltaOpsInsert,
-        subtitle: "",
+        subtitle: secondDeltaOpsInsert?.replace("\n", "") || "",
       };
     }
 
