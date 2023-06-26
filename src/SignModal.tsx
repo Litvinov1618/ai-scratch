@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Auth,
   signInWithEmailAndPassword,
@@ -21,13 +21,14 @@ interface Props {
 
 function SignModal({ auth, setIsNewUser }: Props) {
   const [signModalType, setSignModalType] = useState(SignModalType.SignIn);
-  const [email, setEmail] = useState("");
   const [isEmailSent, setIsEmailSent] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const [isPasswordShown, setIsPasswordShown] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const currentPasswordInputRef = useRef<HTMLInputElement>(null);
+  const newPasswordInputRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordInputRef = useRef<HTMLInputElement>(null);
 
   const clearMessages = () => {
     setErrorMessage("");
@@ -35,12 +36,24 @@ function SignModal({ auth, setIsNewUser }: Props) {
   };
 
   const signIn = () => {
+    const email = emailInputRef.current?.value;
+    const currentPassword = currentPasswordInputRef.current?.value;
+
+    if (!email) {
+      setErrorMessage("Email is required");
+      return;
+    }
+
     if (!currentPassword) {
       setErrorMessage("Password is required");
       return;
     }
 
-    signInWithEmailAndPassword(auth, email, currentPassword).catch((error) => {
+    signInWithEmailAndPassword(
+      auth,
+      email,
+      currentPassword
+    ).catch((error) => {
       setErrorMessage(error.message);
     });
   };
@@ -53,6 +66,10 @@ function SignModal({ auth, setIsNewUser }: Props) {
   };
 
   const signUp = () => {
+    const email = emailInputRef.current?.value;
+    const newPassword = newPasswordInputRef.current?.value;
+    const confirmPassword = confirmPasswordInputRef.current?.value;
+
     if (!newPassword) {
       setErrorMessage("Password is required");
       return;
@@ -68,7 +85,16 @@ function SignModal({ auth, setIsNewUser }: Props) {
       return;
     }
 
-    createUserWithEmailAndPassword(auth, email, newPassword)
+    if (!email) {
+      setErrorMessage("Email is required");
+      return;
+    }
+
+    createUserWithEmailAndPassword(
+      auth,
+      email,
+      newPassword
+    )
       .then(() => {
         setIsNewUser(true);
       })
@@ -78,11 +104,6 @@ function SignModal({ auth, setIsNewUser }: Props) {
   };
 
   const onSubmit = () => {
-    if (!email) {
-      setErrorMessage("Email is required");
-      return;
-    }
-
     if (signModalType === SignModalType.SignIn) {
       signIn();
       return;
@@ -92,6 +113,8 @@ function SignModal({ auth, setIsNewUser }: Props) {
   };
 
   const resetPassword = () => {
+    const email = emailInputRef.current?.value;
+
     if (!email) {
       setErrorMessage("Email is required");
       return;
@@ -99,7 +122,7 @@ function SignModal({ auth, setIsNewUser }: Props) {
 
     setErrorMessage("");
     sendPasswordResetEmail(auth, email)
-      .then((res) => {
+      .then(() => {
         setIsEmailSent(true);
       })
       .catch((error) => {
@@ -109,8 +132,8 @@ function SignModal({ auth, setIsNewUser }: Props) {
 
   const changeModalType = (type: SignModalType) => {
     clearMessages();
-    setEmail("");
     setSignModalType(type);
+    if (emailInputRef.current?.value) emailInputRef.current.value = "";
   };
 
   return (
@@ -155,11 +178,8 @@ function SignModal({ auth, setIsNewUser }: Props) {
                     autoComplete="email"
                     className="input input-bordered grow"
                     placeholder="Email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      clearMessages();
-                    }}
+                    ref={emailInputRef}
+                    onChange={clearMessages}
                   />
                 </label>
               </div>
@@ -173,11 +193,8 @@ function SignModal({ auth, setIsNewUser }: Props) {
                       autoComplete="current-password"
                       className="input input-bordered grow"
                       placeholder="Password"
-                      value={currentPassword}
-                      onChange={(e) => {
-                        setCurrentPassword(e.target.value);
-                        clearMessages();
-                      }}
+                      ref={currentPasswordInputRef}
+                      onChange={clearMessages}
                     />
                     <ShowPasswordButton
                       isPasswordShown={isPasswordShown}
@@ -197,11 +214,7 @@ function SignModal({ auth, setIsNewUser }: Props) {
                         autoComplete="new-password"
                         className="input input-bordered grow"
                         placeholder="Password"
-                        value={newPassword}
-                        onChange={(e) => {
-                          setNewPassword(e.target.value);
-                          clearMessages();
-                        }}
+                        onChange={clearMessages}
                       />
                       <ShowPasswordButton
                         isPasswordShown={isPasswordShown}
@@ -218,11 +231,8 @@ function SignModal({ auth, setIsNewUser }: Props) {
                         autoComplete="new-password"
                         className="input input-bordered grow"
                         placeholder="Confirm password"
-                        value={confirmPassword}
-                        onChange={(e) => {
-                          setConfirmPassword(e.target.value);
-                          clearMessages();
-                        }}
+                        ref={confirmPasswordInputRef}
+                        onChange={clearMessages}
                       />
                     </label>
                   </div>
@@ -234,10 +244,7 @@ function SignModal({ auth, setIsNewUser }: Props) {
                 {signModalType === SignModalType.SignIn ? "Submit" : "Register"}
               </button>
               <div className="px-2">OR</div>
-              <button
-                className="btn btn-outline"
-                onClick={signInWithGoogle}
-              >
+              <button className="btn btn-outline" onClick={signInWithGoogle}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 50 50"
@@ -258,7 +265,7 @@ function SignModal({ auth, setIsNewUser }: Props) {
               </div>
             )}
           </div>
-          <ul className="menu menu-horizontal bg-base-100 rounded-box w-full">
+          <ul className="menu menu-horizontal flex w-full">
             <li className="grow">
               <button
                 className={`${
