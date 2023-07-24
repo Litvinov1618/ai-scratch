@@ -61,7 +61,7 @@ const Note = ({ note, isActive, selectNote, selectedNote }: Props) => {
       <div className={`${isActive ? "active" : ""} flex-col items-start gap-2`}>
         <p className="line-clamp-2 break-all">{noteText.title || "New Note"}</p>
         <div className="flex gap-2 justify-between">
-          <div className="badge badge-sm max-w-[100px]">
+          <div className="badge badge-sm max-w-[120px]">
             {isDateToday ? showTime(+note.date) : showDate(+note.date)}
           </div>
           <div className="text-xs line-clamp-1 break-all flex-1">

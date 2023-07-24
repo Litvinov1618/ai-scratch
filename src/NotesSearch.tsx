@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 interface Props {
   onSearch: (searchValue: string) => void;
@@ -7,8 +7,7 @@ interface Props {
 }
 
 function NotesSearch({ onSearch, isSearching, clearSearchResults }: Props) {
-  const [searchValue, setSearchValue] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="input-group">
@@ -16,22 +15,20 @@ function NotesSearch({ onSearch, isSearching, clearSearchResults }: Props) {
         type="text"
         placeholder="Search…"
         className="input input-bordered placeholder-black focus:outline-none w-full"
-        value={searchValue}
         onChange={(e) => {
           if (isSearching) return;
-          setSearchValue(e.target.value);
           if (!e.target.value) clearSearchResults();
         }}
         onKeyUp={(e) => {
           if (isSearching) return;
           if (e.key !== "Enter") return;
-          onSearch(searchValue);
+          onSearch(searchInputRef.current?.value || "");
         }}
-        ref={inputRef}
+        ref={searchInputRef}
       />
       <button
         className={`btn btn-square ${isSearching ? "loading" : ""}`}
-        onClick={() => onSearch(searchValue)}
+        onClick={() => onSearch(searchInputRef.current?.value || "")}
       >
         {!isSearching ? (
           <svg
