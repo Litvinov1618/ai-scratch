@@ -152,7 +152,7 @@ function Editor({
           toolbar: [
             ["bold", "italic", "underline", "strike"],
             [{ list: "ordered" }, { list: "bullet" }],
-            ["image", "code-block", "link"],
+            ["code-block", "link"],
           ],
         }}
         placeholder="What's on your mind?"
