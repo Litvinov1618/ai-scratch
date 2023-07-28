@@ -15,8 +15,7 @@ const getUserSettings = async (userEmail: string): Promise<IUserSettings | null>
 
     const userSettings = await res.json();
 
-    if (userSettings.error) {
-        console.error(userSettings.error);
+    if (Object.keys(userSettings).length === 0) {
         return null;
     }
 
