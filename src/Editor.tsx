@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import useRequest, { UseRequestStatus } from "use-request";
 import ReactQuill from "react-quill";
-import { DeltaStatic } from "quill";
+import { DeltaStatic, Sources } from "quill";
 import { INote } from "./App";
 import EditorMenu from "./EditorMenu";
 import useDebounce from "./useDebounce";
@@ -19,6 +19,14 @@ interface Props {
   createEmptyNote: () => void;
   addNoteStatus: UseRequestStatus;
   fetchAllNotes: (userEmail: string) => Promise<INote[]>;
+}
+
+const QUILL_EDITOR_MODULES = {
+  toolbar: [
+    ["bold", "italic", "underline", "strike"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["code-block", "link"],
+  ],
 }
 
 function Editor({
@@ -111,6 +119,34 @@ function Editor({
     }, 1000);
   };
 
+  const handleKeyCombinations = (e: React.KeyboardEvent) => {
+    if ((e.ctrlKey && e.key === "Enter") || (e.metaKey && e.key === "Enter")) {
+      const cantCreate = controlsDisabled || (!!notes.length && !selectedNote?.text);
+      if (cantCreate) return;
+
+      createEmptyNote();
+    }
+
+    if (e.metaKey && e.shiftKey && e.key === "Backspace" && selectedNote?.id) {
+      const cantDelete = controlsDisabled || notes?.length === 1 || !selectedNote;
+      if (cantDelete) return;
+
+      handleDelete(selectedNote.id);
+    }
+  };
+
+  const handleEditorChange = (
+    _content: string,
+    _delta: DeltaStatic,
+    _source: Sources,
+    editor: ReactQuill.UnprivilegedEditor
+  ) => {
+    if (controlsDisabled) return;
+    const delta = editor.getContents();
+    const text = editor.getText().replace(/\n/g, " ").trim();
+    onTextChange(delta, text);
+  };
+
   useEffect(() => {
     if (!showSavedIndicator) return;
 
@@ -137,24 +173,12 @@ function Editor({
         showSavedIndicator={showSavedIndicator}
       />
       <ReactQuill
-        ref={(ref) => {
-          setQuillEditorRef(ref);
-        }}
+        ref={setQuillEditorRef}
         theme="snow"
         value={value}
-        onChange={(_content, _delta, _source, editor) => {
-          if (controlsDisabled) return;
-          const delta = editor.getContents();
-          const text = editor.getText().replace(/\n/g, " ").trim();
-          onTextChange(delta, text);
-        }}
-        modules={{
-          toolbar: [
-            ["bold", "italic", "underline", "strike"],
-            [{ list: "ordered" }, { list: "bullet" }],
-            ["code-block", "link"],
-          ],
-        }}
+        onChange={handleEditorChange}
+        onKeyDown={handleKeyCombinations}
+        modules={QUILL_EDITOR_MODULES}
         placeholder="What's on your mind?"
       />
     </div>

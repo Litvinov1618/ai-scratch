@@ -1,7 +1,7 @@
 import { Request } from "use-request";
 import { IUserSettings } from "./App";
 
-const DEFAULT_SETTINGS: IUserSettings = {
+export const DEFAULT_SETTINGS: IUserSettings = {
     notesSimilarityThreshold: 0.8,
     aiResponseTemperature: 0.7,
     showAiResponse: true,

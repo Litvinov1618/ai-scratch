@@ -1,6 +1,7 @@
 import { useState } from "react";
 import useRequest from "use-request";
 import updateUserSettings from "./updateUserSettings";
+import { DEFAULT_SETTINGS } from "./initiateSettings";
 import { IUserSettings } from "./App";
 
 interface SettingsModalProps {
@@ -54,8 +55,22 @@ function SettingsModal({
     settingsModalRef.current?.close();
   };
 
+  const cancel = () => {
+    settingsModalRef.current?.close();
+  };
+
+  const onDialogClick = (e: React.MouseEvent<HTMLDialogElement>) => {
+    if (e.target !== e.currentTarget) return;
+
+    settingsModalRef.current?.close();
+  };
+
   return (
-    <dialog ref={settingsModalRef} className="p-0 bg-transparent">
+    <dialog
+      ref={settingsModalRef}
+      className="p-0 bg-transparent"
+      onClick={onDialogClick}
+    >
       <div className="w-fit max-w-md bg-base-100 p-6">
         <form>
           <h3 className="font-bold text-lg">Settings</h3>
@@ -68,9 +83,10 @@ function SettingsModal({
           )}
           <div className="py-4 flex flex-col gap-3">
             <div className="form-control w-full">
-              <div className="collapse collapse-plus mb-[-7px]">
+              <h2 className="text-lg font-bold mb-[-10px]">Results</h2>
+              <div className="collapse collapse-arrow">
                 <input type="checkbox" className="peer" />
-                <div className="collapse-title max-sm:text-sm text-md tracking-tight pl-1">
+                <div className="collapse-title max-sm:text-sm text-md tracking-tight pl-0">
                   Similarity Threshold - {similarityRange}
                 </div>
                 <div className="collapse-content pl-1">
@@ -84,20 +100,45 @@ function SettingsModal({
                   </p>
                 </div>
               </div>
-              <input
-                type="range"
-                min="0.1"
-                max="1"
-                step="0.05"
-                value={similarityRange}
-                onChange={(e) => setSimilarityRange(+e.target.value)}
-                className="range range-xs range-primary z-10"
-              />
+              <div className="flex gap-3 items-center">
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1"
+                  step="0.05"
+                  value={similarityRange}
+                  onChange={(e) => setSimilarityRange(+e.target.value)}
+                  className="range range-xs range-primary z-10"
+                />
+                <button
+                  className="btn btn-outline btn-xs"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSimilarityRange(
+                      DEFAULT_SETTINGS.notesSimilarityThreshold
+                    );
+                  }}
+                  formMethod="dialog"
+                >
+                  Reset
+                </button>
+              </div>
             </div>
             <div className="form-control w-full">
-              <div className="collapse collapse-plus mb-[-7px]">
+              <div className="flex justify-between pt-2 items-center">
+                <h2 className="text-lg font-bold mb-[-10px]">AI Response</h2>
+                <input
+                  type="checkbox"
+                  className="toggle toggle-primary mb-[-10px] z-10"
+                  checked={showAiResponse}
+                  onChange={(e) => {
+                    setShowAiResponse(e.target.checked);
+                  }}
+                />
+              </div>
+              <div className="collapse collapse-arrow">
                 <input type="checkbox" className="peer" />
-                <div className="collapse-title max-sm:text-sm text-md tracking-tight pl-1">
+                <div className="collapse-title max-sm:text-sm text-md tracking-tight pl-0">
                   AI Response Temperature - {temperatureRange}
                 </div>
                 <div className="collapse-content pl-1">
@@ -110,39 +151,49 @@ function SettingsModal({
                   </p>
                 </div>
               </div>
-              <input
-                type="range"
-                min="0.1"
-                max="1"
-                step="0.05"
-                value={temperatureRange}
-                onChange={(e) => setTemperatureRange(+e.target.value)}
-                className="range range-xs range-primary z-10"
-              />
-            </div>
-            <div className="form-control w-full">
-              <label className="label cursor-pointer">
-                <p className="max-sm:text-sm text-md">Show AI Response</p>
+              <div className="flex gap-3 items-center relative">
+                {!showAiResponse && (
+                  <div className="absolute top-0 right-0 left-0 bottom-0 opacity-50 z-20 bg-base-100" />
+                )}
                 <input
-                  type="checkbox"
-                  className="toggle toggle-primary"
-                  checked={showAiResponse}
-                  onChange={(e) => {
-                    setShowAiResponse(e.target.checked);
-                  }}
+                  type="range"
+                  min="0.1"
+                  max="1"
+                  step="0.05"
+                  value={temperatureRange}
+                  onChange={(e) => setTemperatureRange(+e.target.value)}
+                  className="range range-xs range-primary z-10"
                 />
-              </label>
+                <button
+                  className="btn btn-outline btn-xs"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setTemperatureRange(DEFAULT_SETTINGS.aiResponseTemperature);
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
           </div>
-          <div className="modal-action">
-            <button
-              className="btn"
-              formMethod="dialog"
-              onClick={saveSettings}
-              disabled={isLoading}
-            >
-              Apply
-            </button>
+          <div className="mt-6 flex justify-end">
+            <div className="flex gap-2">
+              <button
+                className="btn btn-outline btn-sm"
+                formMethod="dialog"
+                onClick={cancel}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-sm"
+                formMethod="dialog"
+                onClick={saveSettings}
+                disabled={isLoading}
+              >
+                Apply
+              </button>
+            </div>
           </div>
         </form>
       </div>

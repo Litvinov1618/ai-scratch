@@ -11,7 +11,6 @@ import Editor from "./Editor";
 import Drawer from "./Drawer";
 import Notes from "./Notes";
 import registerSwipeListeners from "./registerSwipeListeners";
-import checkMobileDevice from "./checkMobileDevice";
 import addUserSettings from "./addUserSettings";
 import getUserSettings from "./getUserSettings";
 import getAllNotes from "./getAllNotes";
@@ -42,7 +41,6 @@ function App() {
   const [notes, setNotes] = useState<INote[]>([]);
   const [selectedNote, setSelectedNote] = useState<INote | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isUserChecked, setIsUserChecked] = useState(false);
   const [blurEditor, setBlurEditor] = useState(false);
   const [initialNotesLoaded, setInitialNotesLoaded] = useState(false);
@@ -123,11 +121,7 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);
 
-  useEffect(() => {
-    setIsMobileDevice(checkMobileDevice());
-
-    return registerSwipeListeners(closeDrawer, openDrawer);
-  }, []);
+  useEffect(() => registerSwipeListeners(closeDrawer, openDrawer), []);
 
   return (
     <div className="relative">
@@ -158,7 +152,7 @@ function App() {
         isDrawerOpen={isDrawerOpen}
         setIsDrawerOpen={setIsDrawerOpen}
       >
-        <Header isMobileDevice={isMobileDevice} />
+        <Header />
         <Editor
           notes={notes}
           setNotes={setNotes}
