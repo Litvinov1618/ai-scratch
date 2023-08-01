@@ -3,6 +3,7 @@ import gesturesVideo from "./assets/gestures.mp4";
 import similarPhrases from "./assets/similarPhrases.mp4";
 import aiSuggestions from "./assets/aiSuggestions.mp4";
 import timeQueries from "./assets/timeQueries.mp4";
+import closeOnDialogClickOutside from "./closeOnDialogClickOutside";
 
 const STEPS = [
   {
@@ -76,21 +77,9 @@ function TutorialModal({ setIsNewUser }: Props) {
 
   const stepIndex = useMemo(() => STEPS.indexOf(step), [step]);
 
-  const onClickOutside = (ref: any) => {
-    return (e: any) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setIsModalShown(false);
-      }
-    };
+  const onModalClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    closeOnDialogClickOutside(e, () => setIsModalShown(false));
   };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", onClickOutside(modalRef));
-
-    return () => {
-      document.removeEventListener("mousedown", onClickOutside(modalRef));
-    };
-  }, []);
 
   return (
     <div>
@@ -101,7 +90,7 @@ function TutorialModal({ setIsNewUser }: Props) {
         checked={isModalShown}
         onChange={() => setIsModalShown(!isModalShown)}
       />
-      <div className="modal backdrop-blur-sm">
+      <div className="modal backdrop-blur-sm" onClick={onModalClick}>
         <div
           className="modal-box p-4 relative no-scrollbar max-md:p-3"
           ref={modalRef}
@@ -127,16 +116,20 @@ function TutorialModal({ setIsNewUser }: Props) {
           <p className="py-3 max-md:py-2 max-md:text-sm">
             {STEPS[stepIndex]?.description}
           </p>
-          {isVideoLoading && <button className="btn btn-circle btn-ghost loading btn-lg w-full" />}
-          <video
-            className={`w-full h-full ${isVideoLoading ? "hidden" : ""}`}
-            autoPlay
-            loop
-            muted
-            playsInline
-            src={step.video}
-            ref={videoRef}
-          />
+          <div className="min-h-[430px] flex items-center">
+            {isVideoLoading && (
+              <button className="btn btn-circle btn-ghost loading btn-lg w-full" />
+            )}
+            <video
+              className={`w-full h-full ${isVideoLoading ? "hidden" : ""}`}
+              autoPlay
+              loop
+              muted
+              playsInline
+              src={step.video}
+              ref={videoRef}
+            />
+          </div>
           <div className="flex justify-center pt-3 max-md:pt-2">
             <button className="btn btn-primary" onClick={setNextStep}>
               {stepIndex === STEPS.length - 1 ? "Finish" : "Next"}

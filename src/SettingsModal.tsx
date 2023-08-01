@@ -3,6 +3,7 @@ import useRequest from "use-request";
 import updateUserSettings from "./updateUserSettings";
 import { DEFAULT_SETTINGS } from "./initiateSettings";
 import { IUserSettings } from "./App";
+import closeOnDialogClickOutside from "./closeOnDialogClickOutside";
 
 interface SettingsModalProps {
   settingsModalRef: React.RefObject<HTMLDialogElement>;
@@ -26,6 +27,10 @@ function SettingsModal({
   const [error, setError] = useState("");
 
   const updateSettingsRequest = useRequest(updateUserSettings);
+
+  const cancel = () => {
+    settingsModalRef.current?.close();
+  };
 
   const saveSettings = async () => {
     const userEmail = sessionStorage.getItem("user_email");
@@ -52,17 +57,11 @@ function SettingsModal({
     }
 
     setSettings(settings);
-    settingsModalRef.current?.close();
-  };
-
-  const cancel = () => {
-    settingsModalRef.current?.close();
+    cancel();
   };
 
   const onDialogClick = (e: React.MouseEvent<HTMLDialogElement>) => {
-    if (e.target !== e.currentTarget) return;
-
-    settingsModalRef.current?.close();
+    closeOnDialogClickOutside(e, cancel);
   };
 
   return (

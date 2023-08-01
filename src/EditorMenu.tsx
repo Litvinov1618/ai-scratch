@@ -1,8 +1,9 @@
 import { INote } from "./App";
+import checkIsMobile from "./checkIsMobile";
 import { showFullDate } from "./formatDate";
 
 interface Props {
-  selectedNotes: INote | null;
+  selectedNote: INote | null;
   handleDelete: (id: string) => void;
   createNote: () => void;
   notes: INote[];
@@ -11,7 +12,7 @@ interface Props {
 }
 
 function EditorMenu({
-  selectedNotes,
+  selectedNote,
   handleDelete,
   createNote,
   notes,
@@ -19,14 +20,15 @@ function EditorMenu({
   showSavedIndicator,
 }: Props) {
   const createButtonDisabled =
-    controlsDisabled || (!!notes.length && !selectedNotes?.text);
+    controlsDisabled || (!!notes.length && !selectedNote?.text);
   const deleteButtonDisabled =
-    controlsDisabled || notes?.length === 1 || !selectedNotes;
+    controlsDisabled || notes?.length === 1 || !selectedNote?.id;
+  const isMobile = checkIsMobile();
 
   return (
     <div className="indicator w-full">
       <div
-        className="indicator-item indicator-center badge badge-primary transition-opacity"
+        className="indicator-item indicator-center badge badge-primary transition-opacity absolute top-2"
         style={{
           opacity: showSavedIndicator ? 1 : 0,
         }}
@@ -34,7 +36,11 @@ function EditorMenu({
         Note saved
       </div>
       <ul className="menu menu-horizontal bg-base-100 rounded-box w-full justify-between py-3">
-        <li className={createButtonDisabled ? "disabled" : ""}>
+        <li
+          className={`${createButtonDisabled ? "disabled" : ""} ${
+            isMobile ? "" : "invisible"
+          }`}
+        >
           <button
             onClick={createNote}
             className="px-1"
@@ -58,19 +64,21 @@ function EditorMenu({
           </button>
         </li>
         <li>
-          <div className="flex justify-center hover:bg-inherit hover:cursor-default">
-            <span className="badge">
-              {selectedNotes?.date
-                ? showFullDate(+selectedNotes.date).toString()
-                : showFullDate(Date.now())}
-            </span>
-          </div>
+          {selectedNote?.id && (
+            <div className="flex justify-center hover:bg-inherit hover:cursor-default">
+              <span className="badge">
+                {selectedNote?.date
+                  ? showFullDate(+selectedNote.date).toString()
+                  : showFullDate(Date.now())}
+              </span>
+            </div>
+          )}
         </li>
         <li className={deleteButtonDisabled ? "disabled" : ""}>
           <button
             onClick={() => {
-              if (!selectedNotes) return;
-              handleDelete(selectedNotes.id);
+              if (!selectedNote) return;
+              handleDelete(selectedNote.id);
             }}
             className="px-1"
             disabled={deleteButtonDisabled}

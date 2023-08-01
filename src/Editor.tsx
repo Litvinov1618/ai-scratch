@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import useRequest, { UseRequestStatus } from "use-request";
+import useRequest, { UseRequestStatus, Request } from "use-request";
 import ReactQuill from "react-quill";
 import { DeltaStatic, Sources } from "quill";
 import { INote } from "./App";
 import EditorMenu from "./EditorMenu";
 import useDebounce from "./useDebounce";
 import deleteNote from "./deleteNote";
-import updateNote from "./updateNote";
+import { INewNote } from "./addNote";
 import "react-quill/dist/quill.snow.css";
 import "./quillEditorStylesOverride.css";
 
@@ -16,9 +16,10 @@ interface Props {
   selectedNote: INote | null;
   setSelectedNote: React.Dispatch<React.SetStateAction<INote | null>>;
   setQuillEditorRef: React.Dispatch<React.SetStateAction<ReactQuill | null>>;
-  createEmptyNote: () => void;
-  addNoteStatus: UseRequestStatus;
+  selectNewNote: () => void;
+  addNoteRequest: Request<INote | undefined, unknown, [note: INewNote]>;
   fetchAllNotes: (userEmail: string) => Promise<INote[]>;
+  updateNoteRequest: Request<Response, unknown, [note: INote]>;
 }
 
 const QUILL_EDITOR_MODULES = {
@@ -27,7 +28,7 @@ const QUILL_EDITOR_MODULES = {
     [{ list: "ordered" }, { list: "bullet" }],
     ["code-block", "link"],
   ],
-}
+};
 
 function Editor({
   notes,
@@ -35,21 +36,16 @@ function Editor({
   selectedNote,
   setSelectedNote,
   setQuillEditorRef,
-  createEmptyNote,
-  addNoteStatus,
+  selectNewNote,
+  addNoteRequest,
   fetchAllNotes,
+  updateNoteRequest,
 }: Props) {
   const deleteNoteRequest = useRequest(deleteNote);
-  const updateNoteRequest = useRequest(updateNote);
   const [previousSelectedNoteId, setPreviousSelectedNoteId] = useState("");
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
 
   const [value, setValue] = useState<ReactQuill.Value | undefined>();
-
-  useEffect(() => {
-    if (!selectedNote) return;
-    setValue(selectedNote?.delta);
-  }, [selectedNote]);
 
   const debounce = useDebounce();
 
@@ -90,7 +86,7 @@ function Editor({
     }
 
     const updatedNote = {
-      ...selectedNote,
+      id: selectedNote.id,
       text,
       delta,
       date: Date.now(),
@@ -100,17 +96,29 @@ function Editor({
     setShowSavedIndicator(false);
 
     debounce(async () => {
-      await updateNoteRequest.execute({
-        text: updatedNote.text,
-        date: updatedNote.date,
-        delta: updatedNote.delta,
-        id: updatedNote.id,
-      });
-
       const userEmail = sessionStorage.getItem("user_email");
       if (!userEmail) {
         console.error("User email not found");
         return;
+      }
+
+      if (updatedNote.id) {
+        await updateNoteRequest.execute(updatedNote);
+      } else {
+        const newNote = await addNoteRequest.execute({
+          text: updatedNote.text,
+          date: updatedNote.date,
+          delta: updatedNote.delta,
+          user_email: userEmail,
+        });
+
+        if (!newNote) {
+          console.error("Error while creating new note");
+          return;
+        }
+
+        setPreviousSelectedNoteId(newNote.id);
+        setSelectedNote(newNote);
       }
 
       const updatedNotes = await fetchAllNotes(userEmail);
@@ -121,14 +129,16 @@ function Editor({
 
   const handleKeyCombinations = (e: React.KeyboardEvent) => {
     if ((e.ctrlKey && e.key === "Enter") || (e.metaKey && e.key === "Enter")) {
-      const cantCreate = controlsDisabled || (!!notes.length && !selectedNote?.text);
+      const cantCreate =
+        controlsDisabled || (!!notes.length && !selectedNote?.text);
       if (cantCreate) return;
 
-      createEmptyNote();
+      selectNewNote();
     }
 
     if (e.metaKey && e.shiftKey && e.key === "Backspace" && selectedNote?.id) {
-      const cantDelete = controlsDisabled || notes?.length === 1 || !selectedNote;
+      const cantDelete =
+        controlsDisabled || notes?.length === 1 || !selectedNote;
       if (cantDelete) return;
 
       handleDelete(selectedNote.id);
@@ -152,12 +162,17 @@ function Editor({
 
     const timeout = setTimeout(() => {
       setShowSavedIndicator(false);
-    }, 8000);
+    }, 3000);
 
     return () => clearTimeout(timeout);
   }, [showSavedIndicator]);
 
-  const isNoteAdding = addNoteStatus === UseRequestStatus.Pending;
+  useEffect(() => {
+    if (!selectedNote) return;
+    setValue(selectedNote?.delta);
+  }, [selectedNote]);
+
+  const isNoteAdding = addNoteRequest.status === UseRequestStatus.Pending;
   const isNoteDeleting = deleteNoteRequest.pending;
 
   const controlsDisabled = isNoteAdding || isNoteDeleting;
@@ -165,9 +180,9 @@ function Editor({
   return (
     <div className="flex flex-col flex-1 h-[100%]">
       <EditorMenu
-        selectedNotes={selectedNote}
+        selectedNote={selectedNote}
         handleDelete={handleDelete}
-        createNote={createEmptyNote}
+        createNote={selectNewNote}
         notes={notes}
         controlsDisabled={controlsDisabled}
         showSavedIndicator={showSavedIndicator}

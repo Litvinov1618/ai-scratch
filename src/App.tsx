@@ -18,6 +18,7 @@ import addNote from "./addNote";
 import app from "./firebase";
 import initiateSettings from "./initiateSettings";
 import initiateNotes from "./initiateNotes";
+import updateNote from "./updateNote";
 
 export interface INote {
   id: string;
@@ -37,12 +38,13 @@ function App() {
   const fetchNotesRequest = useRequest(getAllNotes);
   const fetchUserSettingsRequest = useRequest(getUserSettings);
   const addUserSettingsRequest = useRequest(addUserSettings);
+  const updateNoteRequest = useRequest(updateNote);
 
   const [notes, setNotes] = useState<INote[]>([]);
   const [selectedNote, setSelectedNote] = useState<INote | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isUserChecked, setIsUserChecked] = useState(false);
-  const [blurEditor, setBlurEditor] = useState(false);
+  const [isEditorBlurred, setIsEditorBlurred] = useState(false);
   const [initialNotesLoaded, setInitialNotesLoaded] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [settings, setSettings] = useState<IUserSettings | null>(null);
@@ -53,24 +55,13 @@ function App() {
   const [quillEditorRef, setQuillEditorRef] = useState<ReactQuill | null>(null);
   const settingsModalRef = useRef<HTMLDialogElement>(null);
 
-  const createEmptyNote = async () => {
-    const userEmail = sessionStorage.getItem("user_email");
-    if (!userEmail) {
-      console.error("User email not found");
-      return;
-    }
-
-    const newNote = await addNoteRequest.execute({
+  const selectNewNote = async () => {
+    setSelectedNote({
+      id: "",
+      text: "",
+      delta: "",
       date: Date.now(),
-      user_email: userEmail,
     });
-
-    if (!newNote) return;
-
-    setSelectedNote(newNote);
-
-    const updatedNotes = [newNote, ...notes];
-    setNotes(updatedNotes);
   };
 
   const closeDrawer = () => {
@@ -79,7 +70,7 @@ function App() {
 
   const openDrawer = () => {
     setIsDrawerOpen(true);
-    setBlurEditor(true);
+    setIsEditorBlurred(true);
   };
 
   const logout = () => {
@@ -91,37 +82,49 @@ function App() {
   };
 
   useEffect(() => {
-    if (!blurEditor) return;
+    if (!isEditorBlurred) return;
 
     quillEditorRef?.blur();
-    setBlurEditor(false);
-  }, [blurEditor, quillEditorRef]);
+    setIsEditorBlurred(false);
+  }, [isEditorBlurred, quillEditorRef]);
 
-  useEffect(() => {
-    return auth.onAuthStateChanged((user) => {
-      if (!isUserChecked) setIsUserChecked(true);
-      if (user?.email) {
-        sessionStorage.setItem("user_email", user.email);
-        setInitialNotesLoaded(false);
-        initiateNotes(
-          fetchNotesRequest,
-          createEmptyNote,
-          setNotes,
-          setSelectedNote,
-          setInitialNotesLoaded
-        );
-        initiateSettings(
-          fetchUserSettingsRequest,
-          addUserSettingsRequest,
-          setSettings
-        );
-      }
-      setUser(user);
-    });
+  useEffect(
+    () =>
+      auth.onAuthStateChanged((user) => {
+        if (!isUserChecked) setIsUserChecked(true);
+        if (user?.email) {
+          sessionStorage.setItem("user_email", user.email);
+          setInitialNotesLoaded(false);
+          initiateNotes(
+            fetchNotesRequest,
+            selectNewNote,
+            setNotes,
+            setSelectedNote,
+            setInitialNotesLoaded
+          );
+          initiateSettings(
+            fetchUserSettingsRequest,
+            addUserSettingsRequest,
+            setSettings
+          );
+        }
+        setUser(user);
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth]);
+    [auth]
+  );
 
   useEffect(() => registerSwipeListeners(closeDrawer, openDrawer), []);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!selectedNote) return;
+      updateNoteRequest.execute(selectedNote);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [updateNoteRequest, selectedNote]);
 
   return (
     <div className="relative">
@@ -147,6 +150,8 @@ function App() {
             logout={logout}
             openSettings={openSettings}
             settings={settings}
+            selectNewNote={selectNewNote}
+            isDrawerOpen={isDrawerOpen}
           />
         }
         isDrawerOpen={isDrawerOpen}
@@ -159,9 +164,10 @@ function App() {
           selectedNote={selectedNote}
           setSelectedNote={setSelectedNote}
           setQuillEditorRef={setQuillEditorRef}
-          createEmptyNote={createEmptyNote}
-          addNoteStatus={addNoteRequest.status}
+          selectNewNote={selectNewNote}
+          addNoteRequest={addNoteRequest}
           fetchAllNotes={fetchNotesRequest.execute}
+          updateNoteRequest={updateNoteRequest}
         />
       </Drawer>
     </div>

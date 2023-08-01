@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Note from "./Note";
 import { INote, IUserSettings } from "./App";
 import AIResponseBubble, {
@@ -7,6 +7,7 @@ import AIResponseBubble, {
 } from "./AIResponseBubble";
 import NotesSearch from "./NotesSearch";
 import searchNotes from "./searchNotes";
+import checkIsMobile from "./checkIsMobile";
 
 interface Props {
   notes: INote[];
@@ -16,6 +17,8 @@ interface Props {
   logout: () => void;
   openSettings: () => void;
   settings: IUserSettings | null;
+  selectNewNote: () => void;
+  isDrawerOpen: boolean;
 }
 
 function Notes({
@@ -26,6 +29,8 @@ function Notes({
   logout,
   openSettings,
   settings,
+  selectNewNote,
+  isDrawerOpen,
 }: Props) {
   const [visibleNotes, setVisibleNotes] = useState(notes);
   const [isSearching, setIsSearching] = useState(false);
@@ -33,6 +38,8 @@ function Notes({
     message: "",
     type: AIResponseType.Info,
   });
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const selectNote = (id: string) => {
     const note = notes.find((note) => note.id === id);
@@ -92,6 +99,13 @@ function Notes({
     });
   }, [notes, setVisibleNotes]);
 
+  useEffect(() => {
+    if (!isDrawerOpen) return;
+    setTimeout(() => searchInputRef.current?.focus(), 0);
+  }, [isDrawerOpen]);
+
+  const isMobile = checkIsMobile();
+
   return (
     <div className="w-[100%] h-[100%] flex flex-col fixed flex-1 overflow-hidden">
       <div className="form-control hover:bg-transparent p-2">
@@ -99,23 +113,35 @@ function Notes({
           onSearch={onSearch}
           isSearching={isSearching}
           clearSearchResults={clearSearchResults}
+          searchInputRef={searchInputRef}
         />
-        {settings?.showAiResponse && <AIResponseBubble aiResponse={aiResponse} />}
+        {settings?.showAiResponse && (
+          <AIResponseBubble aiResponse={aiResponse} />
+        )}
       </div>
       <div className="h-[100%] p-2 pt-0 overflow-y-auto flex-1 no-scrollbar">
-        {visibleNotes.length ? (
-          <ul className="menu bg-base-100">
-            {visibleNotes.map((note) => (
+        <ul className="menu bg-base-100">
+          {!isMobile && (
+            <li onClick={selectNewNote}>
+              <div
+                className={`${
+                  selectedNote?.id ? "" : "active"
+                } flex-col items-start gap-2 min-h-[50px] justify-center`}
+              >
+                <p className="line-clamp-2">New Note</p>
+              </div>
+            </li>
+          )}
+          {visibleNotes
+            .map((note) => (
               <Note
                 key={note.date}
-                note={note}
-                isActive={selectedNote?.id === note.id}
+                note={selectedNote?.id === note.id ? selectedNote : note}
                 selectNote={selectNote}
-                selectedNote={selectedNote}
+                isSelected={selectedNote?.id === note.id}
               />
             ))}
-          </ul>
-        ) : null}
+        </ul>
       </div>
       <div className="flex justify-center gap-2 p-2 bg-base-100 border-t border-gray-950 border-opacity-10">
         <button className="btn btn-outline" onClick={logout}>
