@@ -126,7 +126,7 @@ function App() {
 
     window.addEventListener("keydown", handleKeyDown, true);
 
-    return window.removeEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, []);
 
   useEffect(() => {
