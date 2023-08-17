@@ -4,18 +4,17 @@ import { showDate, showTime } from "./formatDate";
 
 interface Props {
   note: INote;
-  isActive?: boolean;
   selectNote: (id: string) => void;
-  selectedNote: INote | null;
+  isSelected: boolean;
 }
 
-const Note = ({ note, isActive, selectNote, selectedNote }: Props) => {
+const Note = ({ note, selectNote, isSelected }: Props) => {
   const onNoteClick = () => {
-    if (selectedNote?.id === note.id) return;
+    if (isSelected) return;
     selectNote(note.id);
   };
 
-  const noteText = useMemo(() => {
+  const noteContent = useMemo(() => {
     if (typeof note.delta === "string" || !note.delta?.ops) {
       return {
         title: note.text,
@@ -58,16 +57,22 @@ const Note = ({ note, isActive, selectNote, selectedNote }: Props) => {
 
   return (
     <li onClick={onNoteClick}>
-      <div className={`${isActive ? "active" : ""} flex-col items-start gap-2`}>
-        <p className="line-clamp-2 break-all">{noteText.title || "New Note"}</p>
-        <div className="flex gap-2 justify-between">
-          <div className="badge badge-sm max-w-[120px]">
-            {isDateToday ? showTime(+note.date) : showDate(+note.date)}
+      <div
+        className={`${
+          isSelected ? "active" : ""
+        } flex-col items-start gap-2 min-h-[72px] justify-center`}
+      >
+        <p className="line-clamp-2">{noteContent.title || <span className="opacity-60">Empty note</span>}</p>
+        {noteContent.title && (
+          <div className="flex gap-2 justify-between">
+            <div className="badge badge-sm max-w-[120px]">
+              {isDateToday ? showTime(+note.date) : showDate(+note.date)}
+            </div>
+            <div className="text-xs line-clamp-1 flex-1">
+              {noteContent.subtitle}
+            </div>
           </div>
-          <div className="text-xs line-clamp-1 break-all flex-1">
-            {noteText.subtitle}
-          </div>
-        </div>
+        )}
       </div>
     </li>
   );

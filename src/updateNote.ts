@@ -7,6 +7,7 @@ const updateNote = async (note: INote): Promise<Response> => {
             "Content-Type": "application/json",
         },
         body: JSON.stringify(note),
+        keepalive: true,
     });
 
     if (!res.ok) {

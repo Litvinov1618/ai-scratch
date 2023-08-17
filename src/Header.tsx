@@ -1,17 +1,11 @@
 import DrawerButton from "./DrawerButton";
 
-interface Props {
-  isMobileDevice: boolean;
-}
-
-function Header({ isMobileDevice }: Props) {
+function Header() {
   return (
-    <div className="text-5xl text-center mb-6 relative">
+    <div className="text-4xl text-center mb-1 relative sm:mb-6 sm:text-5xl">
       AI Scratch
       <div
-        className={`absolute top-0 bottom-0 left-0 flex align-middle lg:hidden ${
-          isMobileDevice ? "hidden" : ""
-        }`}
+        className="absolute top-0 bottom-0 left-0 flex align-middle lg:hidden"
       >
         <DrawerButton />
       </div>

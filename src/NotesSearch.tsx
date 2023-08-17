@@ -1,20 +1,22 @@
-import { useRef } from "react";
-
 interface Props {
   onSearch: (searchValue: string) => void;
   isSearching: boolean;
   clearSearchResults: () => void;
+  searchInputRef: React.RefObject<HTMLInputElement>;
 }
 
-function NotesSearch({ onSearch, isSearching, clearSearchResults }: Props) {
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
+function NotesSearch({
+  onSearch,
+  isSearching,
+  clearSearchResults,
+  searchInputRef,
+}: Props) {
   return (
     <div className="input-group">
       <input
         type="text"
         placeholder="Search…"
-        className="input input-bordered placeholder-black focus:outline-none w-full"
+        className="input input-bordered placeholder-black focus:outline-none w-full border-e-0"
         onChange={(e) => {
           if (isSearching) return;
           if (!e.target.value) clearSearchResults();
