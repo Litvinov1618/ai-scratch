@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Note from "./Note";
 import { INote, IUserSettings } from "./App";
 import AIResponseBubble, {
@@ -19,6 +19,7 @@ interface Props {
   settings: IUserSettings | null;
   selectNewNote: () => void;
   isDrawerOpen: boolean;
+  searchInputRef: React.RefObject<HTMLInputElement>;
 }
 
 function Notes({
@@ -31,6 +32,7 @@ function Notes({
   settings,
   selectNewNote,
   isDrawerOpen,
+  searchInputRef,
 }: Props) {
   const [visibleNotes, setVisibleNotes] = useState(notes);
   const [isSearching, setIsSearching] = useState(false);
@@ -38,8 +40,6 @@ function Notes({
     message: "",
     type: AIResponseType.Info,
   });
-
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const selectNote = (id: string) => {
     const note = notes.find((note) => note.id === id);
@@ -102,7 +102,7 @@ function Notes({
   useEffect(() => {
     if (!isDrawerOpen) return;
     setTimeout(() => searchInputRef.current?.focus(), 0);
-  }, [isDrawerOpen]);
+  }, [isDrawerOpen, searchInputRef]);
 
   const isMobile = checkIsMobile();
 

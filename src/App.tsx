@@ -54,6 +54,7 @@ function App() {
 
   const [quillEditorRef, setQuillEditorRef] = useState<ReactQuill | null>(null);
   const settingsModalRef = useRef<HTMLDialogElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const selectNewNote = async () => {
     setSelectedNote({
@@ -117,6 +118,18 @@ function App() {
   useEffect(() => registerSwipeListeners(closeDrawer, openDrawer), []);
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey && e.key === "k") || (e.ctrlKey && e.key === "k")) {
+        searchInputRef.current?.focus();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown, true);
+
+    return window.removeEventListener("keydown", handleKeyDown, true);
+  }, []);
+
+  useEffect(() => {
     const handleBeforeUnload = () => {
       if (!selectedNote) return;
       updateNoteRequest.execute(selectedNote);
@@ -152,6 +165,7 @@ function App() {
             settings={settings}
             selectNewNote={selectNewNote}
             isDrawerOpen={isDrawerOpen}
+            searchInputRef={searchInputRef}
           />
         }
         isDrawerOpen={isDrawerOpen}
